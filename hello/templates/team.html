@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{{team.name}} (last logged in {{user.last_login}})<br>
+{{team.account}}$<br>
+
+<ul>
+{% for b in bids %}
+    <li>{{ b.date }}  {{ b.player.name  }}  {{ b.amount  }}</li>
+{% endfor %}
+</ul>
+
+
+{% endblock %}

@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% for player, round in bids.items %}
+    <p>
+    <h3>  {{round.0.1.player.name}}  </h3>
+    <ul>
+    {% for b in round %}
+        <li>{{ b.1.amount }}$  {{ b.1.team.name  }}     </li>
+    {% endfor %}
+    </ul>
+    </p>
+{% endfor %}
+
+
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{{player.name}}<br>
+{{player.nflteam}}
+
+  <form action="" method="post">{% csrf_token %}
+    <input type="number" name="bidvalue" value="" id="bidvalue" min="0" max="150" step="1">
+    <label for="player">$</label>
+    <input type="submit" value="Bid" />
+  </form>
+
+
+{% endblock %}
