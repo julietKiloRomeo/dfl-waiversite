@@ -3,9 +3,13 @@
 
 {% block content %}
 
+<p>{{N}} bids are currently waiting to be processed.</p>
+
+Last weeks trades:
+<ul>
 {% for t in trades %}
     <li> {{ t  }} </li>
 {% endfor %}
-
+</ul>
 
 {% endblock %}
