@@ -20,6 +20,7 @@ class Bid(models.Model):
     drop    = models.ForeignKey('Player', related_name='to_drop', null=True)
     date    = models.DateTimeField('date placed', auto_now_add=True)
     processed = models.BooleanField(default=False)
+    succesful = models.BooleanField(default=False)
     def __unicode__(self):
         return '%20s : %s' % (self.team.name, self.player.name)
         
@@ -30,5 +31,7 @@ class Player(models.Model):
     dflteam     = models.ForeignKey('Team', null=True)
     nfl_id      = models.IntegerField(unique=True)
     def __unicode__(self):
-        return self.name
-    
+        if self.dflteam:
+            return '%20s (%s)' % (self.name, self.dflteam.name)
+        else:    
+            return '%20s ' % (self.name)

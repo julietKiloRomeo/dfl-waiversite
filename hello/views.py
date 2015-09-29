@@ -22,27 +22,44 @@ def db(request):
 
     return render(request, 'db.html', {'greetings': greetings})
 
+def delete_bid(request, bid_id):
+    u       = request.user
+    if u.is_authenticated():
+        bid = Bid.objects.get(pk=bid_id)
+        bid.delete()
+        return HttpResponseRedirect("/team")
+    else:
+        return HttpResponseRedirect("/login")
+    
 def bid(request, nfl_id):
     u       = request.user
     if u.is_authenticated():
         p       = Player.objects.get(nfl_id=nfl_id)
+        team    = Team.objects.get(owner=u)
+        roster  = Player.objects.filter(dflteam=team)
         if request.method == 'POST':
-            team    = Team.objects.get(owner=u)
             val     = int(request.POST.get('bidvalue'))
-            b = Bid(team=team, amount=val, player=p)
+            pk_to_drop = request.POST.get('Drop')
+            dropee = Player.objects.get(pk=pk_to_drop)
+            b = Bid(team=team, amount=val, player=p, drop=dropee)
             b.save()
             return HttpResponseRedirect("/team")
         else:
-            return render(request, 'bid.html', {'player': p})
+            return render(request, 'bid.html', {'player': p, 'roster':roster})
     else:
         return HttpResponseRedirect("/login")
 
 def team(request):
+#    util.update_league()
     u       = request.user
     if u.is_authenticated():
         team    = Team.objects.get(owner=u)
-        bids    = Bid.objects.filter(team=team)
-        return render(request, 'team.html', {'user': request.user, 'team':team, 'bids':bids})
+        bids    = Bid.objects.filter(team=team).filter(processed=False)
+        roster  = Player.objects.filter(dflteam=team)
+        return render(request, 'team.html', {'user': request.user, 
+                                             'team':team, 
+                                             'bids':bids, 
+                                             'roster':roster})
     else:
         return HttpResponseRedirect("/login")
     
@@ -92,10 +109,16 @@ def week_results(request):
     
     for p in bids.keys():
         sorted_bids = sorted(bids[p], key=lambda x:x[0], reverse=True)
-        bids[p] = sorted_bids
-        winner = util.bid_winner(bids[p])
-        winners[p]=winner
+        bids[p]     = sorted_bids
+        winner      = util.bid_winner(bids[p])
+        winners[p]  = winner
 
     return render(request, 'results.html', {'bids':bids,'winners':winners})
+
+
+
+
+
+
 
     

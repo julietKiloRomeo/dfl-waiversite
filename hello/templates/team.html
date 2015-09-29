@@ -5,9 +5,17 @@
 {{team.name}} (last logged in {{user.last_login}})<br>
 {{team.account}}$<br>
 
+<h3>Bids</h3>
 <ul>
 {% for b in bids %}
-    <li>{{ b.date }}  {{ b.player.name  }}  {{ b.amount  }}</li>
+    <li>{{ b.date }}  {{ b.player.name  }}  {{ b.amount  }} for {{ b.drop.name  }} <a href={% url 'delete_bid' b.pk %}>X</a> </li>
+{% endfor %}
+</ul>
+
+<h3>Roster</h3>
+<ul>
+{% for p in roster %}
+    <li>{{ p.name }}</li>
 {% endfor %}
 </ul>
 

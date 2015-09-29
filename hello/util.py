@@ -8,12 +8,13 @@ Created on Wed Sep 16 19:12:42 2015
 import requests
 from bs4 import BeautifulSoup as bs
 import re
-from models import Player, Team
+from models import Player, Team, Bid
 from django.contrib.auth.models import User
+import time
 
 def latest_trades():
     trade1 = 'Wes Welker'
-    trade2 = 'Pat Montgomery'
+    trade2 = 'Ty Montgomery'
     trade3 = 'Dan Marino'
     
     return [trade1, trade2, trade3]
@@ -68,20 +69,25 @@ def searchresult_2_player(row):
 def scrapeteam(id):
     url = 'http://fantasy.nfl.com/league/395388/team/%.0f' % id
     rows = url_rows(url)
-    
     players = []    
     for r in rows:        
         links   = r.find_all('a', {"class": re.compile("^playerCard")}  )
         name    = links[0].contents[0]
         ID_txt  = links[0].get('href')
+        ems     = r.find_all('em')
         
         m = re.search('playerId=([0-9]{2,12})', ID_txt)
         if m:
             ID = m.group(1)
         else:
             ID = None
+        m = re.search('- *([A-Z]{1,5})', ems[0].contents[0])
+        if m:
+            team = m.group(1)
+        else:
+            team = None
             
-        players.append( (name, ID) )
+        players.append( (name, ID,team) )
     
     return players
 
@@ -126,6 +132,22 @@ def bid_winner(bids):
         players_on_team = Player.objects.filter(dflteam = b[1].team)
 
         has_money = b[1].team.account >= b[0]
-        can_drop  = b[1].player in players_on_team
+        can_drop  = b[1].player in players_on_team or (b[1].player is None and len(players_on_team)<12)
         if has_money and can_drop:
-            return b[1]
+            return b
+
+def update_league():
+    for team in Team.objects.all():
+        # delete previous roster
+        Player.objects.filter(dflteam=team).update(dflteam=None)
+        # get current roster
+        players = scrapeteam(team.nfl_id)
+        time.sleep(1)
+        for p in players:        
+            Player.objects.update_or_create(nfl_id   = int(p[1]),
+                                   defaults={ 'name' : p[0], 
+                                   'nflteam' : p[2],
+                                   'dflteam' : team} )
+
+
+
