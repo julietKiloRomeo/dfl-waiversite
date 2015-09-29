@@ -4,8 +4,13 @@
 
 
 <div class="container">
-<p>{{team.name}} (last logged in {{user.last_login}})</p>
-<p>{{team.account}}$</p>
+    <div class="row">
+        <div class="col-sm-6"> {{team.name}} (last logged in {{user.last_login}})</div>
+    </div>
+    <div class="row">
+            <div class="col-sm-3">{{team.account}}$</div>
+            <div class="col-sm-3"> <a href="/password"> Change Password </a> </div>
+    </div>
 </div>
 {% if bids %}
 <div class="container">
@@ -37,7 +42,7 @@
 
 
 <div class="container">
-    <h3>Roster</h3>
+  <h3>Roster</h3>
   <table class="table table-striped">
     <thead>
       <tr>
@@ -45,11 +50,11 @@
       </tr>
     </thead>
     <tbody>
-    {% for p in roster %}
+      {% for p in roster %}
         <tr>  
             <td> {{ p.name }} </td> 
         </tr>  
-    {% endfor %}
+      {% endfor %}
     </tbody>
   </table>
 </div> 
