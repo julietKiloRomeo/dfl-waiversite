@@ -9,21 +9,44 @@
 
 
 <div class="container">
-<h3>Last weeks trades</h3>
-  <table class="table table-striped">
-    <thead>
-      <tr>
-        <th>Name</th>
-      </tr>
-    </thead>
-    <tbody>
-    {% for t in trades %}
-        <tr>
-            <td> {{ t  }} </td>
-        </tr>
-    {% endfor %}
-    </tbody>
-  </table>
+  <div class="row">
+    <div class="col-sm-6">
+        <h3>Last weeks trades</h3>
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>Name</th>
+              </tr>
+            </thead>
+            <tbody>
+            {% for t in trades %}
+                <tr>
+                    <td> {{ t  }} </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+          </table>
+    </div> 
+    <div class="col-sm-6">
+        <h3>Team Accounts</h3>
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>Team</th>
+                <th>Funds</th>
+              </tr>
+            </thead>
+            <tbody>
+            {% for tm in teams %}
+                <tr>
+                    <td> <a href="/team/{{tm.nfl_id}}"> {{ tm  }} </a> </td>
+                    <td> {{ tm.account  }} $ </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+          </table>
+    </div> 
+  </div> 
 </div> 
 
 {% endblock %}

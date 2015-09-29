@@ -9,7 +9,9 @@
     </div>
     <div class="row">
             <div class="col-sm-3">{{team.account}}$</div>
-            <div class="col-sm-3"> <a href="/password"> Change Password </a> </div>
+            {% if is_user_home%}
+                <div class="col-sm-3"> <a href="/password"> Change Password </a> </div>
+            {% endif %}
     </div>
 </div>
 {% if bids %}

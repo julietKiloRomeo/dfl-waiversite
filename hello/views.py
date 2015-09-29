@@ -12,7 +12,8 @@ from models import Player, Team, Bid
 def index(request):
     trades = util.latest_trades()
     N_bids = len(Bid.objects.filter(processed=False))
-    return render(request, 'index.html', {'trades': trades, 'N':N_bids})
+    teams = Team.objects.all()
+    return render(request, 'index.html', {'trades': trades, 'N':N_bids, 'teams':teams})
 
 def db(request):
     greeting = Greeting()
@@ -55,16 +56,18 @@ def team(request, team_id=None):
         team    = Team.objects.get(nfl_id=team_id)
     else:
         team    = Team.objects.get(owner=u)
-                        
+    is_user_home = False
     if u.is_authenticated():
         if team.owner==u:
             bids    = Bid.objects.filter(team=team).filter(processed=False)
+            is_user_home = True
         else:
             bids = None
         roster  = Player.objects.filter(dflteam=team)
         return render(request, 'team.html', {'user': request.user, 
                                              'team':team, 
                                              'bids':bids, 
+                                             'is_user_home':is_user_home, 
                                              'roster':roster})
     else:
         return HttpResponseRedirect("/login")
