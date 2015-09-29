@@ -3,13 +3,27 @@
 
 {% block content %}
 
+<div class="container">
 <p>{{N}} bids are currently waiting to be processed.</p>
+</div>
 
-Last weeks trades:
-<ul>
-{% for t in trades %}
-    <li> {{ t  }} </li>
-{% endfor %}
-</ul>
+
+<div class="container">
+<h3>Last weeks trades</h3>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Name</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for t in trades %}
+        <tr>
+            <td> {{ t  }} </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div> 
 
 {% endblock %}

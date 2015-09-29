@@ -49,12 +49,18 @@ def bid(request, nfl_id):
     else:
         return HttpResponseRedirect("/login")
 
-def team(request):
-#    util.update_league()
+def team(request, team_id=None):
     u       = request.user
-    if u.is_authenticated():
+    if team_id:
+        team    = Team.objects.get(nfl_id=team_id)
+    else:
         team    = Team.objects.get(owner=u)
-        bids    = Bid.objects.filter(team=team).filter(processed=False)
+                        
+    if u.is_authenticated():
+        if team.owner==u:
+            bids    = Bid.objects.filter(team=team).filter(processed=False)
+        else:
+            bids = None
         roster  = Player.objects.filter(dflteam=team)
         return render(request, 'team.html', {'user': request.user, 
                                              'team':team, 

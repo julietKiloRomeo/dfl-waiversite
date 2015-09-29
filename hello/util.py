@@ -58,7 +58,7 @@ def searchresult_2_player(row):
     if m:
         ID = m.group(1)
 
-    m = re.search('([A-Z]{2,4}) ?-? ?([A-Z]{2,5})?', pos_team)
+    m = re.search('([A-Z]{1,4}) ?-? ?([A-Z]{2,5})?', pos_team)
     if m:
         pos     = m.group(1)
         team    = m.group(2)

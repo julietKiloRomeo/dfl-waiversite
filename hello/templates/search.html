@@ -2,6 +2,8 @@
 
 {% block content %}
 
+<div class="container">
+
   {% if form.errors %}
     <p class="error">Fumble!</p>
   {% endif %}
@@ -12,10 +14,33 @@
     <input type="submit" value="Search" />
     <input type="submit" value="Search_NFL" name="Search_NFL"/>
   </form>
+</div>
 
-{% for p in matches %}
-    <li> <a href={% url 'bid' p.nfl_id %}> {{ p.name  }} </a> </li>
-{% endfor %}
+<div class="container">
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>DFL Team</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for p in matches %}
+        {% if p.dflteam %}
+          <tr>
+            <th>{{ p.name  }}</th>
+            <th>{{ p.dflteam.name  }}</th>
+          </tr>
+        {% else %}
+          <tr>
+            <th><a href={% url 'bid' p.nfl_id %}> {{ p.name  }} </a></th>
+            <th></th>
+          </tr>
+        {% endif %}
+    {% endfor %}
+    </tbody>
+  </table>
+</div> 
 
 
 

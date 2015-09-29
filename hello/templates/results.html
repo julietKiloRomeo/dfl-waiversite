@@ -1,16 +1,30 @@
 {% extends "base.html" %}
 
 {% block content %}
+
+
 {% for player, round in bids.items %}
-    <p>
-    <h3>  {{round.0.1.player.name}}  </h3>
-    <ul>
+<div class="container">
+  <h3>  {{round.0.1.player.name}}  </h3>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Amount</th>
+        <th>Team</th>
+      </tr>
+    </thead>
+    <tbody>
     {% for b in round %}
-        <li>{{ b.1.amount }}$  {{ b.1.team.name  }}     </li>
+      <tr>
+        <th>{{ b.1.amount }}$</th>
+        <th>{{ b.1.team.name  }}</th>
+      </tr>
     {% endfor %}
-    </ul>
-    </p>
+    </tbody>
+  </table>
+</div> 
 {% endfor %}
+
 
 
 {% endblock %}

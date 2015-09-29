@@ -56,10 +56,16 @@
             <li><a href="/rules">Waiver Regler</a></li>
             <li class="divider"></li>
             <li><a href="/search"><span class="glyphicon glyphicon-usd"></span>Bid</a></li>
+            <li><a href="/results"><span ></span>Results</a></li>
           </ul>
       </li>
     </ul>
     <ul class="nav navbar-nav navbar-right">
+        {% if user.is_authenticated %}
+          <li >
+                <a href="/team"><span ></span> {{user}} </a>
+          </li>
+        {% endif %}
       <li class="navbar-right">
         {% if user.is_authenticated %}
             <a href="/logout"><span class="glyphicon glyphicon-user"></span> Logout </a>

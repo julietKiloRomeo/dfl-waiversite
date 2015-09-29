@@ -2,6 +2,7 @@
 
 {% block content %}
 
+<div class="container">
   {% if form.errors %}
     <p class="error">Fumble! That's not a valid username or password</p>
   {% endif %}
@@ -16,5 +17,6 @@
     <input type="submit" value="login" />
     <input type="hidden" name="next" value="/" />
   </form>
+</div>
 
 {% endblock %}

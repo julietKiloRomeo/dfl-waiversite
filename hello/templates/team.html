@@ -2,22 +2,57 @@
 
 {% block content %}
 
-{{team.name}} (last logged in {{user.last_login}})<br>
-{{team.account}}$<br>
 
-<h3>Bids</h3>
-<ul>
-{% for b in bids %}
-    <li>{{ b.date }}  {{ b.player.name  }}  {{ b.amount  }} for {{ b.drop.name  }} <a href={% url 'delete_bid' b.pk %}>X</a> </li>
-{% endfor %}
-</ul>
+<div class="container">
+<p>{{team.name}} (last logged in {{user.last_login}})</p>
+<p>{{team.account}}$</p>
+</div>
+{% if bids %}
+<div class="container">
+  <h3>Bids</h3>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Time</th>
+        <th>Name</th>
+        <th>Amount</th>
+        <th>Drop</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for b in bids %}
+      <tr>
+        <th>{{ b.date }}</th>
+        <th>{{ b.player.name  }} </th>
+        <th>{{ b.amount  }}</th>
+        <th> {{ b.drop.name  }}</th>
+        <th> <a href={% url 'delete_bid' b.pk %}>X</a> </th>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div> 
+{% endif %}
 
-<h3>Roster</h3>
-<ul>
-{% for p in roster %}
-    <li>{{ p.name }}</li>
-{% endfor %}
-</ul>
+
+<div class="container">
+    <h3>Roster</h3>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Player</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for p in roster %}
+        <tr>  
+            <td> {{ p.name }} </td> 
+        </tr>  
+    {% endfor %}
+    </tbody>
+  </table>
+</div> 
 
 
 {% endblock %}
