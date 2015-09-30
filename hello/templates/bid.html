@@ -2,19 +2,48 @@
 
 {% block content %}
 
-{{player.name}}<br>
-{{player.nflteam}}
+<div class="container">
+    <div class="row">
+        <div class="col-sm-1">
+           <b> Add</b>
+        </div>
+        <div class="col-sm-4">
+            {{player.name}} ( {{player.nflteam}} )
+        </div>
+    </div>
 
   <form action="" method="post">{% csrf_token %}
-    <input type="number" name="bidvalue" value="" id="bidvalue" min="0" max="150" step="1">
-    <label for="player">$</label>
-    <input type="submit" value="Bid" />
-<br>
-    <select name="Drop">
-{% for p in roster %}
-        <option value="{{ p.pk }}"> {{ p.name }} </option>
-{% endfor %}
-    </select>
+    <div class="row">
+        <div class="col-sm-1">
+           <b> Amount </b>
+        </div>
+        <div class="col-sm-4">
+            <input type="number" name="bidvalue" value="0" id="bidvalue" min="0" max="150" step="1">
+        </div>
+        <div class="col-sm-3">
+            <input type="submit" value="Bid" />
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-1">
+           <b> Drop</b>
+        </div>
+        <div class="col-sm-4">
+            <select name="Drop">
+                {% for p in roster %}
+                        <option value="{{ p.pk }}"> {{ p.name }} </option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-1">
+           <b> Priority</b>
+        </div>
+        <div class="col-sm-4">
+            <input type="number" name="Priority" value="1" id="Priority" min="1" max="10" step="1">
+        </div>
+    </div>
   </form>
 
 
