@@ -14,13 +14,14 @@ class Team(models.Model):
         return self.name
 
 class Bid(models.Model):
-    team    = models.ForeignKey('Team')
-    amount  = models.IntegerField()
-    player  = models.ForeignKey('Player')
-    drop    = models.ForeignKey('Player', related_name='to_drop', null=True)
-    date    = models.DateTimeField('date placed', auto_now_add=True)
-    processed = models.BooleanField(default=False)
-    succesful = models.BooleanField(default=False)
+    team        = models.ForeignKey('Team')
+    amount      = models.IntegerField()
+    priority    = models.IntegerField(default=1)
+    player      = models.ForeignKey('Player')
+    drop        = models.ForeignKey('Player', related_name='to_drop', null=True)
+    date        = models.DateTimeField('date placed', auto_now_add=True)
+    processed   = models.BooleanField(default=False)
+    succesful   = models.BooleanField(default=False)
     def __unicode__(self):
         return '%20s : %s' % (self.team.name, self.player.name)
         
