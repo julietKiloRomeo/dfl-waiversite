@@ -5,7 +5,7 @@
 
 {% for player, round in bids.items %}
 <div class="container">
-  <h3>  {{round.0.1.player.name}}  </h3>
+        <h3> {{round.0.1.player.name}} </h3> 
   <table class="table table-striped">
     <thead>
       <tr>
@@ -16,13 +16,14 @@
     <tbody>
     {% for b in round %}
       <tr>
-        <th>{{ b.1.amount }}$</th>
-        <th>{{ b.1.team.name  }}</th>
+        <td width="20%" >{{ b.1.amount }}$</td>
+        <td width="80%">{{ b.1.team.name  }}</td>
       </tr>
     {% endfor %}
     </tbody>
   </table>
 </div> 
+<br>
 {% endfor %}
 
 
