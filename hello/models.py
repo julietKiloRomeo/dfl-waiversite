@@ -10,6 +10,7 @@ class Team(models.Model):
     account = models.IntegerField()
     owner   = models.OneToOneField(User)
     nfl_id  = models.IntegerField(unique=True)
+    avatar  = models.ImageField(upload_to="avatars/", blank=True, null=True)
     def __unicode__(self):
         return self.name
 
