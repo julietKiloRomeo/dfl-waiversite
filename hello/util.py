@@ -14,12 +14,8 @@ import time
 import datetime
 
 
-def latest_trades():
-    trade1 = 'Wes Welker'
-    trade2 = 'Ty Montgomery'
-    trade3 = 'Dan Marino'
-    
-    return [trade1, trade2, trade3]
+def latest_trades():    
+    return []
     
 def url_rows(url):
     r = requests.get(url)
