@@ -129,7 +129,8 @@ STATICFILES_DIRS = (
 # https://warehouse.python.org/project/whitenoise/
 STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
 
-SHOW_RESULTS = os.environ['show_results']
+#SHOW_RESULTS = os.environ['show_results']
+SHOW_RESULTS = 0
 
 
 

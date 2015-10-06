@@ -25,9 +25,10 @@ def index(request):
 
 def delete_bid(request, bid_id):
     u       = request.user
+    bid = Bid.objects.get(pk=bid_id)
     if u.is_authenticated():
-        bid = Bid.objects.get(pk=bid_id)
-        bid.delete()
+        if bid.team.owner==u:
+            bid.delete()
         return HttpResponseRedirect("/team")
     else:
         return HttpResponseRedirect("/login")
