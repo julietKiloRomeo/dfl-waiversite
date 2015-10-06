@@ -11,6 +11,8 @@ import re
 from models import Player, Team, Bid
 from django.contrib.auth.models import User
 import time
+import datetime
+
 
 def latest_trades():
     trade1 = 'Wes Welker'
@@ -150,4 +152,17 @@ def update_league():
                                    'dflteam' : team} )
 
 
-
+def last_wednesday_at_14():
+    current_time = datetime.datetime.now()
+    last_wednesday = (current_time.date() -
+                      datetime.timedelta(days=current_time.weekday()) + 
+                      datetime.timedelta(days=2, weeks=-1))
+    last_wednesday_at_14 = datetime.datetime.combine(last_wednesday, datetime.time(14))
+    return last_wednesday_at_14
+    
+def clear_all_bids():
+    for b in Bid.objects.all():
+        # delete previous roster
+        b.delete()
+        
+        

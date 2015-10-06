@@ -1,11 +1,11 @@
 from django.shortcuts import render
 #from django.http import HttpResponse
 from django.http import HttpResponseRedirect
-from .models import Greeting
+#from .models import Greeting
 import util
 from django.contrib import auth
 from models import Player, Team, Bid
-
+from django.conf import settings
 #import os
 
 # Create your views here.
@@ -15,13 +15,13 @@ def index(request):
     teams = Team.objects.all()
     return render(request, 'index.html', {'trades': trades, 'N':N_bids, 'teams':teams})
 
-def db(request):
-    greeting = Greeting()
-    greeting.save()
-
-    greetings = Greeting.objects.all()
-
-    return render(request, 'db.html', {'greetings': greetings})
+#def db(request):
+#    greeting = Greeting()
+#    greeting.save()
+#
+#    greetings = Greeting.objects.all()
+#
+#    return render(request, 'db.html', {'greetings': greetings})
 
 def delete_bid(request, bid_id):
     u       = request.user
@@ -108,22 +108,25 @@ def login(request):
         
         
 def week_results(request):
-    current_bids        = Bid.objects.filter(processed=False)
-
-    bids    = {}    
-    winners = {}    
-    for b in current_bids:
-        player = b.player.nfl_id
-        bids.setdefault(player , []).append([b.amount, b, False])
+    if settings.SHOW_RESULTS==1:
+        current_bids        = Bid.objects.filter(processed=False)
     
-    for p in bids.keys():
-        sorted_bids = sorted(bids[p], key=lambda x:x[0], reverse=True)
-        bids[p]     = sorted_bids
-        winner      = util.bid_winner(bids[p])
-        winners[p]  = winner
-
-    return render(request, 'results.html', {'bids':bids,'winners':winners})
-
+        bids    = {}    
+        winners = {}    
+        for b in current_bids:
+            player = b.player.nfl_id
+            bids.setdefault(player , []).append([b.amount, b, False])
+        
+        for p in bids.keys():
+            sorted_bids = sorted(bids[p], key=lambda x:x[0], reverse=True)
+            bids[p]     = sorted_bids
+            winner      = util.bid_winner(bids[p])
+            winners[p]  = winner
+    
+        return render(request, 'results.html', {'bids':bids,'winners':winners})
+    else:
+        return HttpResponseRedirect("/")
+        
 
 
 

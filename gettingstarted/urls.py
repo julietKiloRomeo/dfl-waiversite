@@ -23,7 +23,6 @@ urlpatterns = patterns('',
     url(r'^biddelete/(?P<bid_id>.*)/?$', hello.views.delete_bid, name='delete_bid'),
     url(r'^search/?$', hello.views.search, name='search'),
     url(r'^$', hello.views.index, name='index'),
-    url(r'^db', hello.views.db, name='db'),
     url(r'^admin/', include(admin.site.urls)),
 
 )
