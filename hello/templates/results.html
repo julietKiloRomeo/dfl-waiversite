@@ -11,13 +11,15 @@
       <tr>
         <th>Amount</th>
         <th>Team</th>
+        <th>Priority</th>
       </tr>
     </thead>
     <tbody>
     {% for b in round %}
       <tr>
         <td width="20%" >{{ b.1.amount }}$</td>
-        <td width="80%">{{ b.1.team.name  }}</td>
+        <td width="60%">{{ b.1.team.name  }}</td>
+        <td width="20%">{{ b.1.priority  }}</td>
       </tr>
     {% endfor %}
     </tbody>
