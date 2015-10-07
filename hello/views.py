@@ -110,7 +110,7 @@ def login(request):
         
 def week_results(request):
     u       = request.user
-    if settings.SHOW_RESULTS==1 or u.username=='Tech':
+    if settings.SHOW_RESULTS==1 or u.username=='Tech' or u.username=='Superheroes':
         current_bids        = Bid.objects.filter(processed=False)
     
         bids    = {}    
