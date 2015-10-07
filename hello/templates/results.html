@@ -3,27 +3,34 @@
 {% block content %}
 
 
-{% for player, round in bids.items %}
+{% for player, round in rounds.items %}
 <div class="container">
-        <h3> {{round.0.1.player.name}} </h3> 
+        <h3> {{player.name}} </h3> 
   <table class="table table-striped">
     <thead>
       <tr>
-        <th>Amount</th>
+        <th style="text-align:center">Amount</th>
+        <th style="text-align:center">Priority</th>
         <th>Team</th>
-        <th>Priority</th>
-        <th>Date</th>
         <th>Drop</th>
+        <th>Date</th>
       </tr>
     </thead>
     <tbody>
-    {% for b in round %}
+    {% for b in round.bids %}
       <tr>
-        <td width="20%" >{{ b.1.amount }}$</td>
-        <td width="20%">{{ b.1.team.name  }}</td>
-        <td width="20%">{{ b.1.priority  }}</td>
-        <td width="20%">{{ b.1.date  }}</td>
-        <td width="20%">{{ b.1.drop.name  }}</td>
+        <td width="10%"  style="text-align:center">{{ b.amount }}$</td>
+        <td width="10%" style="text-align:center">{{ b.priority  }}</td>
+        <td width="30%">  {% if b.team.nfl_id == round.winner.team.nfl_id%}
+            <b>
+            {%endif%}
+            {{ b.team.name  }}
+            {% if b.team.nfl_id == round.winner.team.nfl_id%}
+            </b>
+            {%endif%}
+        </td>
+        <td width="30%">{{ b.drop.name  }}</td>
+        <td width="20%">{{ b.date | date:"D j M H:i" }}</td>
       </tr>
     {% endfor %}
     </tbody>

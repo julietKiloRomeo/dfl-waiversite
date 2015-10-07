@@ -22,7 +22,7 @@ def url_rows(url):
     page = r.content
     soup = bs(page, 'html.parser')
     rows = soup.find_all('tr', {"class": re.compile("^player")})
-    return rows
+    return (rows, soup)
 
 def query(name):
     url = 'http://fantasy.nfl.com/league/395388/players/search?searchQuery=%s' % (name)
@@ -66,28 +66,35 @@ def searchresult_2_player(row):
 
 def scrapeteam(id):
     url = 'http://fantasy.nfl.com/league/395388/team/%.0f' % id
-    rows = url_rows(url)
+    rows, soup = url_rows(url)
+    #        <li class="first"><em>Rank</em> <strong>7</strong></li>
+    rank_ul    = soup.find_all('ul', {"class": re.compile("^teamStats")}  )[0]
+    rank       = rank_ul.find_all('li', {"class": re.compile("^first")}  )[0].strong.contents[0]
+
+    
+    
     players = []    
     for r in rows:        
         links   = r.find_all('a', {"class": re.compile("^playerCard")}  )
-        name    = links[0].contents[0]
-        ID_txt  = links[0].get('href')
-        ems     = r.find_all('em')
-        
-        m = re.search('playerId=([0-9]{2,12})', ID_txt)
-        if m:
-            ID = m.group(1)
-        else:
-            ID = None
-        m = re.search('- *([A-Z]{1,5})', ems[0].contents[0])
-        if m:
-            team = m.group(1)
-        else:
-            team = None
+        if links:
+            name    = links[0].contents[0]
+            ID_txt  = links[0].get('href')
+            ems     = r.find_all('em')
             
-        players.append( (name, ID,team) )
+            m = re.search('playerId=([0-9]{2,12})', ID_txt)
+            if m:
+                ID = m.group(1)
+            else:
+                ID = None
+            m = re.search('- *([A-Z]{1,5})', ems[0].contents[0])
+            if m:
+                team = m.group(1)
+            else:
+                team = None
+                
+            players.append( (name, ID,team) )
     
-    return players
+    return (players, int(rank))
 
 def add_player(p):
     dfl_owner = p['owner']
@@ -122,25 +129,16 @@ def add_from_search(q):
         add_player(p)
 
 
-def bid_winner(bids):
-    sorted_bids = sorted(bids, key=lambda x:x[0], reverse=True)
-    for b in sorted_bids:
-        # b = [dollars, bid]
-        # bid has fields team, amount, (player to-)drop, player
-        players_on_team = Player.objects.filter(dflteam = b[1].team)
-
-        has_money = b[1].team.account >= b[0]
-        can_drop  = b[1].player in players_on_team or (b[1].player is None and len(players_on_team)<12)
-        if has_money and can_drop:
-            return b
-
 def update_league():
     for team in Team.objects.all():
+        print team
         # delete previous roster
         Player.objects.filter(dflteam=team).update(dflteam=None)
         # get current roster
-        players = scrapeteam(team.nfl_id)
+        players, rank = scrapeteam(team.nfl_id)
         time.sleep(1)
+        team.league_position = rank
+        team.save()
         for p in players:        
             Player.objects.update_or_create(nfl_id   = int(p[1]),
                                    defaults={ 'name' : p[0], 
@@ -150,15 +148,70 @@ def update_league():
 
 def last_wednesday_at_14():
     current_time = datetime.datetime.now()
+    
+    # get friday, one week ago, at 16 o'clock
     last_wednesday = (current_time.date() -
                       datetime.timedelta(days=current_time.weekday()) + 
                       datetime.timedelta(days=2, weeks=-1))
-    last_wednesday_at_14 = datetime.datetime.combine(last_wednesday, datetime.time(14))
-    return last_wednesday_at_14
     
+    l_w_at_14 = datetime.datetime.combine(last_wednesday, datetime.time(14))
+    return l_w_at_14
+
+def is_2_waiver_period():
+    current_time = datetime.datetime.now()
+    is_w_after_14 = (current_time.weekday() == 2) and current_time.hour > 14
+    is_thursday   = current_time.weekday() == 3
+    is_f_after_4  = (current_time.weekday() == 4) and current_time.hour > 4
+    
+    return is_w_after_14 or is_thursday or is_f_after_4
+
+    
+
+
 def clear_all_bids():
     for b in Bid.objects.all():
         # delete previous roster
         b.delete()
         
+
+
+
+
+
+def divide_bids(bids):
+    # bids should be a list
+    rounds = {}
+    for b in bids:
+        player = b.player
+        rounds.setdefault(player, {'winner':None, 'bids':[]})['bids'].append(b)
+    # sort 
+    for p in rounds.keys():
+        tmp = rounds[p]['bids']
+        tmp = sorted(rounds[p]['bids'], key=lambda b: b.frac_amount(), reverse=True) 
+        rounds[p]['bids'] = tmp
+    
+    return rounds
+
+
+def resolve_round(rounds):
+    # use divide_bids to create rounds dict
+    # go through all rounds
+    round_priority  = []
+    bids_to_process = []
+    for p in rounds.keys():
+        is_resolved = rounds[p]['winner']
+        if not is_resolved:
+            for b in rounds[p]['bids']:
+                if b.is_valid():
+                    round_priority.append( b )
+                    break
+    round_priority  = sorted(round_priority, key=lambda b: b.priority)
+    prio_to_resolve = round_priority[0].priority
+    while len(round_priority) and round_priority[0].priority == prio_to_resolve:
+        winning_bid    = round_priority.pop(0)
+        rounds[winning_bid.player]['winner'] = winning_bid
+        bids_to_process.append(winning_bid)
+    return (rounds, bids_to_process)
+
+
         

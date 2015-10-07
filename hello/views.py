@@ -1,27 +1,16 @@
 from django.shortcuts import render
 #from django.http import HttpResponse
 from django.http import HttpResponseRedirect
-#from .models import Greeting
 import util
 from django.contrib import auth
 from models import Player, Team, Bid
 from django.conf import settings
-#import os
 
-# Create your views here.
 def index(request):
     trades = util.latest_trades()
     N_bids = len(Bid.objects.filter(processed=False))
     teams = Team.objects.all()
     return render(request, 'index.html', {'trades': trades, 'N':N_bids, 'teams':teams})
-
-#def db(request):
-#    greeting = Greeting()
-#    greeting.save()
-#
-#    greetings = Greeting.objects.all()
-#
-#    return render(request, 'db.html', {'greetings': greetings})
 
 def delete_bid(request, bid_id):
     u       = request.user
@@ -35,23 +24,25 @@ def delete_bid(request, bid_id):
     
 def bid(request, nfl_id):
     u       = request.user
-#    if u.is_authenticated():
-    if False:
-        p       = Player.objects.get(nfl_id=nfl_id)
-        team    = Team.objects.get(owner=u)
-        roster  = Player.objects.filter(dflteam=team)
-        if request.method == 'POST':
-            val     = int(request.POST.get('bidvalue'))
-            pk_to_drop = request.POST.get('Drop')
-            dropee = Player.objects.get(pk=pk_to_drop)
-            b = Bid(team=team, amount=val, player=p, drop=dropee)
-            b.save()
-            return HttpResponseRedirect("/team")
+    if u.is_authenticated():
+        if not settings.LOCK_BIDS:
+            p       = Player.objects.get(nfl_id=nfl_id)
+            team    = Team.objects.get(owner=u)
+            roster  = Player.objects.filter(dflteam=team)
+            if request.method == 'POST':
+                val         = int(request.POST.get('bidvalue'))
+                pk_to_drop  = request.POST.get('Drop')
+                dropee      = Player.objects.get(pk=pk_to_drop)
+                priority    = request.POST.get('Priority')
+                b           = Bid(team=team, amount=val, player=p, drop=dropee, priority=priority)
+                b.save()
+                return HttpResponseRedirect("/team")
+            else:
+                return render(request, 'bid.html', {'player': p, 'roster':roster})
         else:
-            return render(request, 'bid.html', {'player': p, 'roster':roster})
+            return HttpResponseRedirect("/")
     else:
-        return HttpResponseRedirect("/")
-#        return HttpResponseRedirect("/login")
+        return HttpResponseRedirect("/login")
 
 def team(request, team_id=None):
     u       = request.user
@@ -75,7 +66,6 @@ def team(request, team_id=None):
     else:
         return HttpResponseRedirect("/login")
     
-
 def search(request):
     u       = request.user
     if u.is_authenticated():
@@ -90,10 +80,8 @@ def search(request):
     else:
         return HttpResponseRedirect("/login")
 
-
 def rules(request):
     return render(request, 'rules.html')
-
 
 def login(request):
     username = request.POST.get('username', '')
@@ -103,39 +91,26 @@ def login(request):
         # Correct password, and the user is marked "active"
         auth.login(request, user)
         # Redirect to a success page.
-        return HttpResponseRedirect("/")
-    else:
-        # Show an error page
-        return HttpResponseRedirect("/invalid/")
-        
-        
+    return HttpResponseRedirect("/")
         
 def week_results(request):
-#    u       = request.user
-#    if settings.SHOW_RESULTS==1 or u.username=='Tech' or u.username=='Superheroes':
-    if True:
+    u       = request.user
+    if settings.SHOW_RESULTS or (u.is_staff and settings.SHOW_RESULTS_FOR_STAFF) or (u.is_superuser and settings.SHOW_RESULTS_FOR_SU):
         current_bids        = Bid.objects.filter(processed=False)
-    
-        bids    = {}    
-        winners = {}    
-        for b in current_bids:
-            player = b.player.nfl_id
-            bids.setdefault(player , []).append([b.amount, b, False])
+        rounds = util.divide_bids(current_bids)
         
-        for p in bids.keys():
-            sorted_bids = sorted(bids[p], key=lambda x:x[0], reverse=True)
-            bids[p]     = sorted_bids
-            winner      = util.bid_winner(bids[p])
-            winners[p]  = winner
-    
-        return render(request, 'results.html', {'bids':bids,'winners':winners})
+        rounds_left = True
+        while rounds_left>0:
+            rounds, bids_to_process = util.resolve_round(rounds)
+#            for b in bids_to_process:
+#                t = b.team
+#                t.account -= b.amount
+#                t.drop(b.drop)
+            winner_list = [rnd['winner'] for rnd in rounds.itervalues()  ]
+            rounds_left = sum(x is None for x in winner_list)
+        
+        return render(request, 'results.html', {'rounds':rounds})
     else:
         return HttpResponseRedirect("/")
         
-
-
-
-
-
-
     

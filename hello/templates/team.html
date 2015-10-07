@@ -7,7 +7,7 @@
 <div class="container">
     <div class="row">
         <div class="col-sm-6"> 
-            {{team.name}} (last logged in {{team.owner.last_login}})
+            {{team.name}} (last logged in {{team.owner.last_login | date:"D j M H:i" }})
         </div>
         <div class="col-sm-6">  
             {% if team.avatar %}
@@ -28,9 +28,10 @@
   <table class="table table-striped">
     <thead>
       <tr>
-        <th>Time</th>
+        <th style="text-align:right">Time</th>
         <th>Name</th>
-        <th>Amount</th>
+        <th style="text-align:center">Amount</th>
+        <th style="text-align:center">Priority</th>
         <th>Drop</th>
         <th></th>
       </tr>
@@ -38,11 +39,12 @@
     <tbody>
       {% for b in bids %}
       <tr>
-        <th>{{ b.date }}</th>
-        <th>{{ b.player.name  }} </th>
-        <th>{{ b.amount  }}</th>
-        <th> {{ b.drop.name  }}</th>
-        <th> <a href={% url 'delete_bid' b.pk %}>X</a> </th>
+        <td style="text-align:right">{{ b.date  | date:"D j M H:i" }}</td>
+        <td>{{ b.player.name  }} </td>
+        <td style="text-align:center">{{ b.amount  }}$</td>
+        <td style="text-align:center">{{ b.priority  }}</td>
+        <td> {{ b.drop.name  }}</td>
+        <td> <a href={% url 'delete_bid' b.pk %}>X</a> </td>
       </tr>
       {% endfor %}
     </tbody>

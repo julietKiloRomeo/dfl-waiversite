@@ -77,15 +77,6 @@ WSGI_APPLICATION = 'gettingstarted.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.8/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'waiver',   
-        'USER': 'jkr',
-        'PASSWORD': 'eskadron',
-        'HOST': 'localhost',
-        'PORT': '',    }
-}
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.8/topics/i18n/
@@ -98,7 +89,17 @@ USE_TZ = True
 
 
 # Parse database configuration from $DATABASE_URL
-DATABASES['default'] =  dj_database_url.config()
+DATABASES = {'default' :  dj_database_url.config() }
+if os.environ.get('IS_LOCAL'):
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': 'waiver',   
+            'USER': 'jkr',
+            'PASSWORD': 'eskadron',
+            'HOST': 'localhost',
+            'PORT': '',    }
+    }
 
 # Enable Connection Pooling (if desired)
 #DATABASES['default']['ENGINE'] = 'django_postgrespool'
@@ -130,7 +131,9 @@ STATICFILES_DIRS = (
 STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
 
 #SHOW_RESULTS = os.environ['show_results']
-SHOW_RESULTS = 0
-
+SHOW_RESULTS            = 0
+SHOW_RESULTS_FOR_SU     = 1
+SHOW_RESULTS_FOR_STAFF  = 1
+LOCK_BIDS               = 1
 
 
