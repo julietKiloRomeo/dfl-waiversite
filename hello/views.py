@@ -35,7 +35,8 @@ def delete_bid(request, bid_id):
     
 def bid(request, nfl_id):
     u       = request.user
-    if u.is_authenticated():
+#    if u.is_authenticated():
+    if False:
         p       = Player.objects.get(nfl_id=nfl_id)
         team    = Team.objects.get(owner=u)
         roster  = Player.objects.filter(dflteam=team)
@@ -49,7 +50,8 @@ def bid(request, nfl_id):
         else:
             return render(request, 'bid.html', {'player': p, 'roster':roster})
     else:
-        return HttpResponseRedirect("/login")
+        return HttpResponseRedirect("/")
+#        return HttpResponseRedirect("/login")
 
 def team(request, team_id=None):
     u       = request.user
@@ -109,8 +111,9 @@ def login(request):
         
         
 def week_results(request):
-    u       = request.user
-    if settings.SHOW_RESULTS==1 or u.username=='Tech' or u.username=='Superheroes':
+#    u       = request.user
+#    if settings.SHOW_RESULTS==1 or u.username=='Tech' or u.username=='Superheroes':
+    if True:
         current_bids        = Bid.objects.filter(processed=False)
     
         bids    = {}    
