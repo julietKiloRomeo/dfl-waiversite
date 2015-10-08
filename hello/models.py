@@ -16,7 +16,7 @@ class Bid(models.Model):
     processed   = models.BooleanField(default=False)
     succesful   = models.BooleanField(default=False)
     def __unicode__(self):
-        return '%20s : %s' % (self.team.name, self.player.name)
+        return '%20s : %s for %s (%.0f)' % (self.team.name, self.player.name, self.drop.name, self.priority)
     def is_valid(self):
         return (self.amount <= self.team.account) and (self.drop.dflteam == self.team)         
     def frac_amount(self):

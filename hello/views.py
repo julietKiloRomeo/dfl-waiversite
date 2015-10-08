@@ -100,15 +100,19 @@ def week_results(request):
         rounds = util.divide_bids(current_bids)
         
         rounds_left = True
+        droplist    = []
         while rounds_left>0:
             rounds, bids_to_process = util.resolve_round(rounds)
-#            for b in bids_to_process:
-#                t = b.team
+            for b in bids_to_process:
+                droplist.append(b)
+                t = b.team
 #                t.account -= b.amount
-#                t.drop(b.drop)
+                t.drop(b.drop)
             winner_list = [rnd['winner'] for rnd in rounds.itervalues()  ]
             rounds_left = sum(x is None for x in winner_list)
-        
+        for b in droplist:
+            b.drop.dfl_team = b.team
+            b.drop.save()
         return render(request, 'results.html', {'rounds':rounds})
     else:
         return HttpResponseRedirect("/")
