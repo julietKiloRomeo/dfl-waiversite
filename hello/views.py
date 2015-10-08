@@ -95,25 +95,11 @@ def login(request):
         
 def week_results(request):
     u       = request.user
-    if settings.SHOW_RESULTS or (u.is_staff and settings.SHOW_RESULTS_FOR_STAFF) or (u.is_superuser and settings.SHOW_RESULTS_FOR_SU):
-        current_bids        = Bid.objects.filter(processed=False)
-        rounds = util.divide_bids(current_bids)
-        
-        rounds_left = True
-        droplist    = []
-        while rounds_left>0:
-            rounds, bids_to_process = util.resolve_round(rounds)
-            for b in bids_to_process:
-                droplist.append(b)
-                b.drop.dflteam = None
-                b.drop.save()
-#                t.account -= b.amount
-
-            winner_list = [rnd['winner'] for rnd in rounds.itervalues()  ]
-            rounds_left = sum(x is None for x in winner_list)
-        for b in droplist:            
-            b.drop.dflteam = b.team
-            b.drop.save()
+    if request.method == 'POST':
+        rounds, droplist = util.round_results(commit=True)
+        return HttpResponseRedirect("/")
+    if settings.SHOW_RESULTS or (u.is_staff and settings.SHOW_RESULTS_FOR_STAFF) or (u.is_superuser and settings.SHOW_RESULTS_FOR_SU):        
+        rounds, droplist = util.round_results()
         return render(request, 'results.html', {'rounds':rounds, 'droplist':droplist})
     else:
         return HttpResponseRedirect("/")

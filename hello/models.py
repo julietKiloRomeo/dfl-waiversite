@@ -16,12 +16,12 @@ class Bid(models.Model):
     processed   = models.BooleanField(default=False)
     succesful   = models.BooleanField(default=False)
     def __unicode__(self):
-        return '%20s : %s for %s (%.0f)' % (self.team.name, self.player.name, self.drop.name, self.priority)
+        return '%20s %d$ : %s for %s (%.0f)' % (self.team.name, self.amount, self.player.name, self.drop.name, self.priority)
     def is_valid(self):
         return (self.amount <= self.team.account) and (self.drop.dflteam == self.team)         
     def frac_amount(self):
         # break ties
-        return self.amount + self.team.account/150.0/10 + self.team.league_pos/12.0/100
+        return self.amount + self.team.account/151.0/10 + self.team.league_pos/13.0/100
 
 class Player(models.Model):
     name        = models.CharField(max_length=100)
@@ -45,8 +45,9 @@ class Team(models.Model):
     def __unicode__(self):
         return self.name
     def drop(self, player):
-        player.dflteam = None
-        player.save()
+        if player.dflteam==self:
+            player.dflteam = None
+            player.save()
 
 
 

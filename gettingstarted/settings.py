@@ -66,6 +66,7 @@ TEMPLATES = [
                 'django.template.context_processors.media',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'hello.context_processors.custom',
             ],
         },
     },
@@ -82,7 +83,7 @@ WSGI_APPLICATION = 'gettingstarted.wsgi.application'
 # https://docs.djangoproject.com/en/1.8/topics/i18n/
 
 LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Copenhagen'
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
@@ -131,7 +132,7 @@ STATICFILES_DIRS = (
 STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
 
 #SHOW_RESULTS = os.environ['show_results']
-SHOW_RESULTS            = 0
+SHOW_RESULTS            = 1
 SHOW_RESULTS_FOR_SU     = 1
 SHOW_RESULTS_FOR_STAFF  = 1
 LOCK_BIDS               = 1

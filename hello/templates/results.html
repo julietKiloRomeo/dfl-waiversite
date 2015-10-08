@@ -39,6 +39,21 @@
 <br>
 {% endfor %}
 
+{% if has_permission %}
+<div class="container">
+  <form action="" method="post">{% csrf_token %}
+        <div class="row">
+            <div class="col-sm-2 col-sm-offset-10">
+                <input type="submit" value="submit_round" />
+                <input type="hidden" name="next" value="/" />
+            </div>
+        </div>
+  </form>
+</div> 
+{%endif%}
+
+<br>
+
 
 
 {% endblock %}

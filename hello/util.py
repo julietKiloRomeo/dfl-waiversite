@@ -12,10 +12,21 @@ from models import Player, Team, Bid
 from django.contrib.auth.models import User
 import time
 import datetime
+from django.utils import timezone
 
+def waiver_week(d):
+    w_0 = datetime.datetime(year=2015, month=9, day=16, hour=14)
+    w_0 =  timezone.make_aware(w_0, timezone.get_current_timezone())
+    return (d-w_0).days//7+1
 
-def latest_trades():    
-    return []
+def latest_trades():
+    trades = Bid.objects.filter(succesful=True)
+    latest = []
+    this_week = waiver_week(timezone.now())
+    for t in trades:
+        if this_week - waiver_week(t.date) == 1:
+            latest.append(t)
+    return latest
     
 def url_rows(url):
     r = requests.get(url)
@@ -192,7 +203,6 @@ def divide_bids(bids):
     
     return rounds
 
-
 def resolve_round(rounds):
     # use divide_bids to create rounds dict
     # go through all rounds
@@ -219,5 +229,34 @@ def resolve_round(rounds):
             bids_to_process.append(winning_bid)
     return (rounds, bids_to_process)
 
+def round_results(commit=False):
+    current_bids    = Bid.objects.filter(processed=False)
+    rounds          = divide_bids(current_bids)
+    
+    rounds_left = True
+    droplist    = []
+    while rounds_left>0:
+        rounds, bids_to_process = resolve_round(rounds)
+        for b in bids_to_process:
+            droplist.append(b)
+            b.drop.dflteam = None
+            b.drop.save()
+            if commit:
+                db_team = Team.objects.get(pk=b.team.pk)
+                db_bid  = Bid.objects.get(pk=b.pk)
+                db_team.account -= b.amount
+                db_team.save()
+                db_bid.succesful = True
+                db_bid.save()
 
+        winner_list = [rnd['winner'] for rnd in rounds.itervalues()  ]
+        rounds_left = sum(x is None for x in winner_list)
+    if not commit:
+        for b in droplist:            
+            b.drop.dflteam = b.team
+            b.drop.save()
+    else:
+        Bid.objects.all().update(processed=True)
+        
+    return (rounds, droplist)
         
