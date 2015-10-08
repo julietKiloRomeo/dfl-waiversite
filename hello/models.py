@@ -45,9 +45,8 @@ class Team(models.Model):
     def __unicode__(self):
         return self.name
     def drop(self, player):
-        p = Player.objects.get(pk=player.pk)
-        p.dflteam = None
-        p.save()
+        player.dflteam = None
+        player.save()
 
 
 

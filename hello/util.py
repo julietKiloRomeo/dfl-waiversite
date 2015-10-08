@@ -183,7 +183,7 @@ def divide_bids(bids):
     rounds = {}
     for b in bids:
         player = b.player
-        rounds.setdefault(player, {'winner':None, 'bids':[]})['bids'].append(b)
+        rounds.setdefault(player, {'winner':None, 'bids':[], 'nonvalid':[]})['bids'].append(b)
     # sort 
     for p in rounds.keys():
         tmp = rounds[p]['bids']
@@ -202,15 +202,21 @@ def resolve_round(rounds):
         is_resolved = rounds[p]['winner']
         if not is_resolved:
             for b in rounds[p]['bids']:
-                if b.is_valid():
+                db_bid = Bid.objects.get(pk=b.pk)
+                if db_bid.is_valid():
                     round_priority.append( b )
                     break
+                else:
+                    rounds[p]['nonvalid'].append(b.pk)
+            if not round_priority:
+                rounds[p]['winner'] = 'None valid'
     round_priority  = sorted(round_priority, key=lambda b: b.priority)
-    prio_to_resolve = round_priority[0].priority
-    while len(round_priority) and round_priority[0].priority == prio_to_resolve:
-        winning_bid    = round_priority.pop(0)
-        rounds[winning_bid.player]['winner'] = winning_bid
-        bids_to_process.append(winning_bid)
+    if round_priority:
+        prio_to_resolve = round_priority[0].priority
+        while len(round_priority) and round_priority[0].priority == prio_to_resolve:
+            winning_bid    = round_priority.pop(0)
+            rounds[winning_bid.player]['winner'] = winning_bid
+            bids_to_process.append(winning_bid)
     return (rounds, bids_to_process)
 
 
