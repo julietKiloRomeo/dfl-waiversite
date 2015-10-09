@@ -1,5 +1,4 @@
 from django.shortcuts import render
-#from django.http import HttpResponse
 from django.http import HttpResponseRedirect
 import util
 from django.contrib import auth
@@ -24,26 +23,35 @@ def delete_bid(request, bid_id):
         return HttpResponseRedirect("/login")
     
 def bid(request, nfl_id):
-    u       = request.user
-    if u.is_authenticated():
-        if not settings.LOCK_BIDS:
-            p       = Player.objects.get(nfl_id=nfl_id)
-            team    = Team.objects.get(owner=u)
-            roster  = Player.objects.filter(dflteam=team)
-            if request.method == 'POST':
-                val         = int(request.POST.get('bidvalue'))
-                pk_to_drop  = request.POST.get('Drop')
-                dropee      = Player.objects.get(pk=pk_to_drop)
-                priority    = request.POST.get('Priority')
-                b           = Bid(team=team, amount=val, player=p, drop=dropee, priority=priority)
-                b.save()
-                return HttpResponseRedirect("/team")
-            else:
-                return render(request, 'bid.html', {'player': p, 'roster':roster})
+    u           = request.user
+    allow_bids  = u.is_authenticated() and (not settings.LOCK_BIDS) and util.is_1_waiver_period()
+    if allow_bids:
+        p               = Player.objects.get(nfl_id=nfl_id)
+        team            = Team.objects.get(owner=u)
+        roster          = Player.objects.filter(dflteam=team)
+        if request.method == 'POST':
+            val         = int(request.POST.get('bidvalue'))
+            if val < 0:
+                val=0
+            if val > team.account:
+                val = team.account
+            pk_to_drop  = request.POST.get('Drop')
+            dropee      = Player.objects.get(pk=pk_to_drop)
+            priority    = int(request.POST.get('Priority'))
+            # priority can not be the same as any other unprocessed bids with same drop
+            same_drop   = Bid.objects.filter(team=team).filter(processed=False).filter(drop=dropee)
+            other_prios = []            
+            for sd in same_drop:
+                other_prios.append(sd.priority)
+            while priority in other_prios:
+                priority += 1
+            b           = Bid(team=team, amount=val, player=p, drop=dropee, priority=priority)
+            b.save()
+            return HttpResponseRedirect("/team")
         else:
-            return HttpResponseRedirect("/")
+            return render(request, 'bid.html', {'player': p, 'roster':roster, 'team':team})
     else:
-        return HttpResponseRedirect("/login")
+        return HttpResponseRedirect("/")
 
 def team(request, team_id=None):
     u       = request.user
@@ -95,24 +103,31 @@ def login(request):
     return HttpResponseRedirect("/")
         
 def week_results(request, week=None):
-    u       = request.user
-    this_week    = util.waiver_week(timezone.now())
+    u               = request.user
+    this_week       = util.waiver_week(timezone.now())
+    has_permission  = (u.is_staff or u.is_superuser)
+    # if week is defined - always show results. They will be processed
+    # if it is None and it is second waiver period and user is staff allow week to stay None
+    show_unprocessed = (not week) and has_permission and util.is_2_waiver_period()
+
     if week:
         week = int(week)
-    elif not (u.is_staff or u.is_superuser):
+    # otherwise set week to this week so unprocessed bids are hidden
+    elif not show_unprocessed:
         week = this_week
+        
+    # request is post if commit_week was pressed - or someone sent a post-request by other means...
     if request.method == 'POST':
-        if (u.is_staff or u.is_superuser):
-            # if week is None (default) unprocessed bids will be processed
+        # iff unprocessed is allowed to be shown, then the POST is also allowed to do processing
+        if show_unprocessed:
+            # unprocessed bids will be processed
             rounds, droplist = util.round_results(commit=True)
         return HttpResponseRedirect("/")
-
-    if settings.SHOW_RESULTS or (u.is_staff or u.is_superuser):        
+    else:        
+        # if week is None, unprocessed bids will be shown
         rounds, droplist = util.round_results(week=week)
         return render(request, 'results.html', {'rounds':rounds, 
                                                 'droplist':droplist, 
                                                 'weeks': range( 1, 1+this_week ), 
                                                 'week':week}) # if week is none commit button appears
-    else:
-        return HttpResponseRedirect("/")
             

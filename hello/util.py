@@ -35,16 +35,6 @@ def url_rows(url):
     rows = soup.find_all('tr', {"class": re.compile("^player")})
     return (rows, soup)
 
-def query(name):
-    url = 'http://fantasy.nfl.com/league/395388/players/search?searchQuery=%s' % (name)
-    rows = url_rows(url)
-
-    results = []
-    for r in rows:
-        results.append(searchresult_2_player(r))
-
-    return results
-
 def searchresult_2_player(row):
     tmp     = row.find_all('td')
     info    = tmp[1] 
@@ -72,7 +62,17 @@ def searchresult_2_player(row):
         pos     = m.group(1)
         team    = m.group(2)
 
-    return{'name':name, 'pos':pos, 'team':team, 'id':ID, 'owner':(owner_url, owner_name)}        
+    return {'name':name, 'pos':pos, 'team':team, 'id':ID, 'owner':(owner_url, owner_name)}        
+
+def query(name):
+    url = 'http://fantasy.nfl.com/league/395388/players/search?searchQuery=%s' % (name)
+    rows, soup = url_rows(url)
+
+    results = []
+    for r in rows:
+        results.append(searchresult_2_player(r))
+
+    return results
 
 
 def scrapeteam(id):
@@ -156,7 +156,6 @@ def update_league():
                                    'nflteam' : p[2],
                                    'dflteam' : team} )
 
-
 def last_wednesday_at_14():
     current_time = datetime.datetime.now()
     
@@ -175,6 +174,13 @@ def is_2_waiver_period():
     is_f_after_4  = (current_time.weekday() == 4) and current_time.hour > 4
     
     return is_w_after_14 or is_thursday or is_f_after_4
+
+def is_1_waiver_period():
+    current_time   = datetime.datetime.now()
+    is_tuesday     = current_time.weekday() == 1
+    is_w_before_14 = (current_time.weekday() == 2) and current_time.hour <= 14
+    
+    return is_tuesday or is_w_before_14
 
     
 
@@ -213,7 +219,7 @@ def resolve_round(rounds, droplist):
         if not is_resolved:
             for b in rounds[p]['bids']:
                 db_bid = Bid.objects.get(pk=b.pk)
-                if not db_bid.player in droplist:
+                if not db_bid.drop.pk in droplist:
                     round_priority.append( b )
                     break
                 else:
@@ -233,7 +239,7 @@ def round_results(commit=False, week=None):
     # called with week=None process all unprocessed bids
     # otherwise calculate round results for given week
     if week:
-        all_bids        = Bid.objects.all()
+        all_bids        = Bid.objects.filter(processed=True)
         current_bids=[]
         for b in all_bids:
             if waiver_week(b.date)==week:
@@ -248,7 +254,7 @@ def round_results(commit=False, week=None):
     while rounds_left>0:
         rounds, bids_to_process = resolve_round(rounds, droplist)
         for b in bids_to_process:
-            droplist.append(b.drop)
+            droplist.append(b.drop.pk)
             if commit:
                 db_team = Team.objects.get(pk=b.team.pk)
                 db_bid  = Bid.objects.get(pk=b.pk)
