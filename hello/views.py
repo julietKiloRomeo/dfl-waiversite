@@ -128,6 +128,6 @@ def week_results(request, week=None):
         rounds, droplist = util.round_results(week=week)
         return render(request, 'results.html', {'rounds':rounds, 
                                                 'droplist':droplist, 
-                                                'weeks': range( 1, 1+this_week ), 
+                                                'weeks': range( 1, this_week ), 
                                                 'week':week}) # if week is none commit button appears
             
