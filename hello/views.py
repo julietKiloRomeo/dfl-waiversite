@@ -114,7 +114,7 @@ def week_results(request, week=None):
         week = int(week)
     # otherwise set week to this week so unprocessed bids are hidden
     elif not show_unprocessed:
-        week = this_week
+        week = this_week - 1
         
     # request is post if commit_week was pressed - or someone sent a post-request by other means...
     if request.method == 'POST':
