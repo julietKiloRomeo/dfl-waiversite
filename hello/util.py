@@ -15,7 +15,7 @@ import datetime
 from django.utils import timezone
 
 def waiver_week(d):
-    w_0 = datetime.datetime(year=2015, month=9, day=16, hour=14)
+    w_0 = datetime.datetime(year=2015, month=9, day=9, hour=14)
     w_0 =  timezone.make_aware(w_0, timezone.get_current_timezone())
     return (d-w_0).days//7+1
 
