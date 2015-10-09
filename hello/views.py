@@ -5,6 +5,7 @@ import util
 from django.contrib import auth
 from models import Player, Team, Bid
 from django.conf import settings
+from django.utils import timezone
 
 def index(request):
     trades = util.latest_trades()
@@ -93,15 +94,25 @@ def login(request):
         # Redirect to a success page.
     return HttpResponseRedirect("/")
         
-def week_results(request):
+def week_results(request, week=None):
     u       = request.user
+    this_week    = util.waiver_week(timezone.now())
+    if week:
+        week = int(week)
+    elif not (u.is_staff or u.is_superuser):
+        week = this_week
     if request.method == 'POST':
-        rounds, droplist = util.round_results(commit=True)
+        if (u.is_staff or u.is_superuser):
+            # if week is None (default) unprocessed bids will be processed
+            rounds, droplist = util.round_results(commit=True)
         return HttpResponseRedirect("/")
-    if settings.SHOW_RESULTS or (u.is_staff and settings.SHOW_RESULTS_FOR_STAFF) or (u.is_superuser and settings.SHOW_RESULTS_FOR_SU):        
-        rounds, droplist = util.round_results()
-        return render(request, 'results.html', {'rounds':rounds, 'droplist':droplist})
+
+    if settings.SHOW_RESULTS or (u.is_staff or u.is_superuser):        
+        rounds, droplist = util.round_results(week=week)
+        return render(request, 'results.html', {'rounds':rounds, 
+                                                'droplist':droplist, 
+                                                'weeks': range( 1, 1+this_week ), 
+                                                'week':week}) # if week is none commit button appears
     else:
         return HttpResponseRedirect("/")
-        
-    
+            

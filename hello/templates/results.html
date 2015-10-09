@@ -3,6 +3,23 @@
 {% block content %}
 
 
+
+
+<div class="container">
+  <ul class="nav nav-tabs" role="tablist">
+  {% for w in weeks %}
+    {% if w == week %}
+        <li class="active"><a href="/results/{{ w }}"> {{ w }} </a></li>
+    {% else %}
+        <li><a href="/results/{{ w }}"> {{ w }} </a></li>
+    {% endif %}
+  {% endfor %}
+  </ul>
+</div>
+
+
+
+
 {% for player, round in rounds.items %}
 <div class="container">
         <h3> {{player.name}} </h3> 
@@ -40,6 +57,7 @@
 {% endfor %}
 
 {% if has_permission %}
+{% if not week %}
 <div class="container">
   <form action="" method="post">{% csrf_token %}
         <div class="row">
@@ -50,6 +68,7 @@
         </div>
   </form>
 </div> 
+{%endif%}
 {%endif%}
 
 <br>

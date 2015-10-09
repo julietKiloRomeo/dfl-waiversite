@@ -203,7 +203,7 @@ def divide_bids(bids):
     
     return rounds
 
-def resolve_round(rounds):
+def resolve_round(rounds, droplist):
     # use divide_bids to create rounds dict
     # go through all rounds
     round_priority  = []
@@ -213,7 +213,7 @@ def resolve_round(rounds):
         if not is_resolved:
             for b in rounds[p]['bids']:
                 db_bid = Bid.objects.get(pk=b.pk)
-                if db_bid.is_valid():
+                if not db_bid.player in droplist:
                     round_priority.append( b )
                     break
                 else:
@@ -229,18 +229,26 @@ def resolve_round(rounds):
             bids_to_process.append(winning_bid)
     return (rounds, bids_to_process)
 
-def round_results(commit=False):
-    current_bids    = Bid.objects.filter(processed=False)
+def round_results(commit=False, week=None):
+    # called with week=None process all unprocessed bids
+    # otherwise calculate round results for given week
+    if week:
+        all_bids        = Bid.objects.all()
+        current_bids=[]
+        for b in all_bids:
+            if waiver_week(b.date)==week:
+                current_bids.append(b)
+    else:
+        current_bids    = Bid.objects.filter(processed=False)
+
     rounds          = divide_bids(current_bids)
     
     rounds_left = True
     droplist    = []
     while rounds_left>0:
-        rounds, bids_to_process = resolve_round(rounds)
+        rounds, bids_to_process = resolve_round(rounds, droplist)
         for b in bids_to_process:
-            droplist.append(b)
-            b.drop.dflteam = None
-            b.drop.save()
+            droplist.append(b.drop)
             if commit:
                 db_team = Team.objects.get(pk=b.team.pk)
                 db_bid  = Bid.objects.get(pk=b.pk)
@@ -251,11 +259,7 @@ def round_results(commit=False):
 
         winner_list = [rnd['winner'] for rnd in rounds.itervalues()  ]
         rounds_left = sum(x is None for x in winner_list)
-    if not commit:
-        for b in droplist:            
-            b.drop.dflteam = b.team
-            b.drop.save()
-    else:
+    if commit:
         Bid.objects.all().update(processed=True)
         
     return (rounds, droplist)

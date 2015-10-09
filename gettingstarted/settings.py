@@ -24,9 +24,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 SECRET_KEY = 'i+acxn5(akgsn!sr4^qgf(^m&*@+g1@u^t@=8s@axc41ml*f=s'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-TEMPLATE_DEBUG = True
+DEBUG           = False
+TEMPLATE_DEBUG  = False
 
 
 # Application definition
@@ -82,25 +81,15 @@ WSGI_APPLICATION = 'gettingstarted.wsgi.application'
 # Internationalization
 # https://docs.djangoproject.com/en/1.8/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'Europe/Copenhagen'
-USE_I18N = True
-USE_L10N = True
-USE_TZ = True
+LANGUAGE_CODE   = 'en-us'
+TIME_ZONE       = 'Europe/Copenhagen'
+USE_I18N        = True
+USE_L10N        = True
+USE_TZ          = True
 
 
 # Parse database configuration from $DATABASE_URL
 DATABASES = {'default' :  dj_database_url.config() }
-if os.environ.get('IS_LOCAL'):
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql_psycopg2',
-            'NAME': 'waiver',   
-            'USER': 'jkr',
-            'PASSWORD': 'eskadron',
-            'HOST': 'localhost',
-            'PORT': '',    }
-    }
 
 # Enable Connection Pooling (if desired)
 #DATABASES['default']['ENGINE'] = 'django_postgrespool'
@@ -138,3 +127,15 @@ SHOW_RESULTS_FOR_STAFF  = 1
 LOCK_BIDS               = 1
 
 
+if os.environ.get('IS_LOCAL'):
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': 'waiver',   
+            'USER': 'jkr',
+            'PASSWORD': 'eskadron',
+            'HOST': 'localhost',
+            'PORT': '',    }
+    }
+    DEBUG           = True
+    TEMPLATE_DEBUG  = True
