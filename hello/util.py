@@ -20,7 +20,7 @@ def waiver_week(d):
     return (d-w_0).days//7+1
 
 def latest_trades():
-    trades = Bid.objects.filter(succesful=True)
+    trades = Bid.objects.filter(succesful=True).order_by('team__name', '-amount')
     latest = []
     this_week = waiver_week(timezone.now())
     for t in trades:
@@ -157,18 +157,22 @@ def update_league():
                                    'dflteam' : team} )
 
 def last_wednesday_at_14():
-    current_time = datetime.datetime.now()
-    
-    # get friday, one week ago, at 16 o'clock
+    current_time = timezone.now()    
+    # get wednesday, one week ago, at 16 o'clock
     last_wednesday = (current_time.date() -
                       datetime.timedelta(days=current_time.weekday()) + 
                       datetime.timedelta(days=2, weeks=-1))
     
     l_w_at_14 = datetime.datetime.combine(last_wednesday, datetime.time(14))
+    l_w_at_14 =  timezone.make_aware(l_w_at_14, timezone.get_current_timezone())
     return l_w_at_14
 
+def time_until_open():
+    next_wednesday  = last_wednesday_at_14() + datetime.timedelta(weeks=2)
+    return next_wednesday - timezone.now()
+
 def is_2_waiver_period():
-    current_time = datetime.datetime.now()
+    current_time  = timezone.now()
     is_w_after_14 = (current_time.weekday() == 2) and current_time.hour > 14
     is_thursday   = current_time.weekday() == 3
     is_f_after_4  = (current_time.weekday() == 4) and current_time.hour > 4
@@ -176,24 +180,16 @@ def is_2_waiver_period():
     return is_w_after_14 or is_thursday or is_f_after_4
 
 def is_1_waiver_period():
-    current_time   = datetime.datetime.now()
+    current_time   = timezone.now()
     is_tuesday     = current_time.weekday() == 1
     is_w_before_14 = (current_time.weekday() == 2) and current_time.hour <= 14
     
     return is_tuesday or is_w_before_14
 
-    
-
-
 def clear_all_bids():
     for b in Bid.objects.all():
         # delete previous roster
         b.delete()
-        
-
-
-
-
 
 def divide_bids(bids):
     # bids should be a list

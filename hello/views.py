@@ -9,7 +9,7 @@ from django.utils import timezone
 def index(request):
     trades = util.latest_trades()
     N_bids = len(Bid.objects.filter(processed=False))
-    teams = Team.objects.all()
+    teams = Team.objects.all().order_by('name')
     return render(request, 'index.html', {'trades': trades, 'N':N_bids, 'teams':teams})
 
 def delete_bid(request, bid_id):

@@ -1,11 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
-
-#class Greeting(models.Model):
-#    when = models.DateTimeField('date created', auto_now_add=True)
-
         
-
 class Bid(models.Model):
     team        = models.ForeignKey('Team')
     amount      = models.IntegerField()
