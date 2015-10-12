@@ -157,19 +157,20 @@ def update_league():
                                    'dflteam' : team} )
 
 def last_wednesday_at_14():
-    current_time = timezone.now()    
+    current_time            = timezone.now()
+    go_back_one_week        = current_time.weekday() <= 2
+    monday_of_current_week  = current_time.date() - datetime.timedelta(days=current_time.weekday())
     # get wednesday, one week ago, at 16 o'clock
-    last_wednesday = (current_time.date() -
-                      datetime.timedelta(days=current_time.weekday()) + 
-                      datetime.timedelta(days=2, weeks=-1))
+    last_wednesday = (monday_of_current_week + 
+                      datetime.timedelta(days=2, weeks = -1*go_back_one_week  ))
     
     l_w_at_14 = datetime.datetime.combine(last_wednesday, datetime.time(14))
     l_w_at_14 =  timezone.make_aware(l_w_at_14, timezone.get_current_timezone())
     return l_w_at_14
 
 def time_until_open():
-    next_wednesday  = last_wednesday_at_14() + datetime.timedelta(weeks=1, days=-1, hours=-8)
-    return next_wednesday - timezone.now()
+    next_tuesday_at_06  = last_wednesday_at_14() + datetime.timedelta(weeks=1, days=-1, hours=-8)
+    return next_tuesday_at_06 - timezone.now()
 
 def is_2_waiver_period():
     current_time  = timezone.now()
@@ -180,11 +181,11 @@ def is_2_waiver_period():
     return is_w_after_14 or is_thursday or is_f_after_4
 
 def is_1_waiver_period():
-    current_time   = timezone.now()
-    is_tuesday     = current_time.weekday() == 1
-    is_w_before_14 = (current_time.weekday() == 2) and current_time.hour <= 14
+    current_time            = timezone.now()
+    is_tuesday_after_06     = current_time.weekday() == 1 and current_time.hour >= 6
+    is_w_before_14          = (current_time.weekday() == 2) and current_time.hour <= 14
     
-    return is_tuesday or is_w_before_14
+    return is_tuesday_after_06 or is_w_before_14
 
 def clear_all_bids():
     for b in Bid.objects.all():

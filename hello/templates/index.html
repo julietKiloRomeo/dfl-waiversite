@@ -71,9 +71,27 @@
 
   var $clock = $('#clock');
 
-  $clock.countdown(get_auction_start(), function(event) {
-    $(this).html(event.strftime('Auction opens in %D days %H:%M:%S'));
-  });
+  $clock.countdown(get_auction_start(),  
+        function(event) 
+        {
+            if (event.elapsed) 
+                {location.reload()}
+            else
+                {
+                    if (event.offset.totalDays) 
+                        {
+                            $(this).html(event.strftime('Auction opens in %-D days %H:%M:%S'))
+                        }                
+                    else
+                        {
+                            $(this).html(event.strftime('Auction opens in %H:%M:%S'))
+                        }                
+                }                
+            
+        }
+    );
+
+
 
 </script>
 
