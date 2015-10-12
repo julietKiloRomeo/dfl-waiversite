@@ -168,7 +168,7 @@ def last_wednesday_at_14():
     return l_w_at_14
 
 def time_until_open():
-    next_wednesday  = last_wednesday_at_14() + datetime.timedelta(weeks=2)
+    next_wednesday  = last_wednesday_at_14() + datetime.timedelta(weeks=1, days=-1, hours=-8)
     return next_wednesday - timezone.now()
 
 def is_2_waiver_period():
