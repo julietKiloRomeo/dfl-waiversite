@@ -55,23 +55,45 @@ def bid(request, nfl_id):
 
 def team(request, team_id=None):
     u       = request.user
+
     if team_id:
         team    = Team.objects.get(nfl_id=team_id)
     else:
         team    = Team.objects.get(owner=u)
     is_user_home = False
+    
     if u.is_authenticated():
         if team.owner==u:
             bids    = Bid.objects.filter(team=team).filter(processed=False)
             is_user_home = True
         else:
             bids = None
+
+        if request.method == 'POST' and is_user_home:
+            amount      = request.POST.get('amount')
+            priority    = request.POST.get('priority')
+            drop        = request.POST.get('drop')
+            bid_id      = request.POST.get('bid_id')
+            b           = Bid.objects.get(pk=bid_id)
+
+            same_drop = Bid.objects.filter(drop=drop).filter(priority=priority)
+            # if same drop and wanted prio - swap prios
+            if same_drop:
+                same_drop[0].priority = b.priority
+                same_drop[0].save()
+
+            b.amount    = amount
+            b.priority  = priority
+            b.drop      = Player.objects.get(pk=drop)
+            b.save()
+
         roster  = Player.objects.filter(dflteam=team)
+
         return render(request, 'team.html', {'user': request.user, 
-                                             'team':team, 
-                                             'bids':bids, 
-                                             'is_user_home':is_user_home, 
-                                             'roster':roster})
+                                                 'team':team, 
+                                                 'bids':bids, 
+                                                 'is_user_home':is_user_home, 
+                                                 'roster':roster})
     else:
         return HttpResponseRedirect("/login")
     

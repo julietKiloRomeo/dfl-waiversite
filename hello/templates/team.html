@@ -3,7 +3,7 @@
 
 {% block content %}
 
-
+{{ editdata }}
 <div class="container">
     <div class="row">
         <div class="col-sm-6"> 
@@ -34,6 +34,7 @@
         <th style="text-align:center">Priority</th>
         <th>Drop</th>
         <th></th>
+        <th></th>
       </tr>
     </thead>
     <tbody>
@@ -44,7 +45,14 @@
         <td style="text-align:center">{{ b.amount  }}$</td>
         <td style="text-align:center">{{ b.priority  }}</td>
         <td> {{ b.drop.name  }}</td>
-        <td> <a href={% url 'delete_bid' b.pk %}>X</a> </td>
+        <td> <button class="btn btn-primary btn-xs" data-title="Edit" data-toggle="modal" data-target="#edit{{forloop.counter}}"> 
+                    <span class="glyphicon glyphicon-pencil"></span>
+             </button>
+        </td>
+        <td> <a class="btn btn-danger btn-xs" href="/biddelete/{{b.pk}}"> 
+                    <span class="glyphicon glyphicon-trash"></span>
+             </a>
+        </td>
       </tr>
       {% endfor %}
     </tbody>
@@ -71,5 +79,54 @@
   </table>
 </div> 
 
+
+
+
+
+
+{% for b in bids %}
+<div class="modal fade" id="edit{{forloop.counter}}" tabindex="-1" role="dialog" aria-labelledby="edit" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+            <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+        </button>
+        <h4 class="modal-title custom_align" id="Heading">{{ b.player.name }}</h4>
+      </div>
+
+   <form action="" method="post" id="edit{{forloop.counter}}">{% csrf_token %}
+      <div class="modal-body">
+          <div class="form-group">
+            <label for="amount">Amount</label>
+            <input class="form-control " type="number" name="amount" id="amount" min="0" max="{{b.team.account}}" step="1" placeholder="{{b.amount}}" value="{{b.amount}}">
+            <label for="priority">Priority</label>
+            <input class="form-control " type="number" name="priority" id="priority" min="1" max="10" step="1" placeholder="{{b.priority}}" value="{{b.priority}}">
+          </div>
+          <div class="form-group">
+            <label for="drop">Drop</label>
+            <select name="drop" id="drop" placeholder="{{b.player.name}} value="{{ b.player.pk }}">
+                {% for p in roster %}
+                        <option value="{{ p.pk }}"> {{ p.name }} </option>
+                {% endfor %}
+            </select>
+         </div>
+          <input type="hidden" name="bid_id" value="{{b.pk}}"></input>
+      </div>
+
+      <div class="modal-footer ">
+          <input type="submit"  class="btn btn-warning btn-lg" style="width: 100%;" class="glyphicon glyphicon-ok-sign" value="Submit">
+      </div>
+
+       </form>
+
+
+    </div>
+  </div>
+</div>
+    
+
+{% endfor %}
 
 {% endblock %}
