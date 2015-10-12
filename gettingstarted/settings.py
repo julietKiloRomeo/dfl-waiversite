@@ -106,7 +106,7 @@ ALLOWED_HOSTS = ['*']
 ENV_PTH = os.path.abspath(os.path.dirname(__file__))
 
 MEDIA_ROOT = os.path.join(ENV_PTH,'media/')
-MEDIA_URL  = '/media/'
+MEDIA_URL  = '/static/'
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 STATIC_ROOT = os.path.join(BASE_DIR,'staticfiles')
