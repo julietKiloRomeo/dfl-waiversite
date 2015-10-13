@@ -137,5 +137,5 @@ if os.environ.get('IS_LOCAL'):
             'HOST': 'localhost',
             'PORT': '',    }
     }
-    DEBUG           = True
-    TEMPLATE_DEBUG  = True
+DEBUG           = True
+TEMPLATE_DEBUG  = True
