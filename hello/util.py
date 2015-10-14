@@ -144,10 +144,10 @@ def update_league():
                                    'dflteam' : team} )
 
 def last_wednesday_at_14():
-    current_time            = timezone.now()
+    current_time            = timezone.localtime(timezone.now())
     go_back_one_week        = current_time.weekday() <= 2
     monday_of_current_week  = current_time.date() - datetime.timedelta(days=current_time.weekday())
-    # get wednesday, one week ago, at 16 o'clock
+    # get last wednesday. If it is mon, tue or wed it is last week, otherwise wed this week
     last_wednesday = (monday_of_current_week + 
                       datetime.timedelta(days=2, weeks = -1*go_back_one_week  ))
     
@@ -156,23 +156,20 @@ def last_wednesday_at_14():
     return l_w_at_14
 
 def time_until_open():
-    next_tuesday_at_06  = last_wednesday_at_14() + datetime.timedelta(weeks=2, days=-1, hours=-8)
+    current_time        = timezone.localtime(timezone.now())
+    add_two_weeks       = current_time.weekday() <= 2
+    next_tuesday_at_06  = last_wednesday_at_14() + datetime.timedelta(weeks=1 + 1*add_two_weeks, days=-1, hours=-8)
     return next_tuesday_at_06 - timezone.now()
 
-def is_2_waiver_period():
-    current_time  = timezone.now()
-    is_w_after_14 = (current_time.weekday() == 2) and current_time.hour >= 14
-    is_thursday   = current_time.weekday() == 3
-    is_f_after_4  = (current_time.weekday() == 4) and current_time.hour > 4
-    
-    return is_w_after_14 or is_thursday or is_f_after_4
-
 def is_1_waiver_period():
-    current_time            = timezone.now()
+    current_time            = timezone.localtime(timezone.now())
     is_tuesday_after_06     = current_time.weekday() == 1 and current_time.hour >= 6
-    is_w_before_14          = (current_time.weekday() == 2) and current_time.hour < 12
+    is_w_before_14          = (current_time.weekday() == 2) and current_time.hour < 14
     
     return is_tuesday_after_06 or is_w_before_14
+
+def is_2_waiver_period():    
+    return not is_1_waiver_period()
 
 def clear_all_bids():
     for b in Bid.objects.all():
