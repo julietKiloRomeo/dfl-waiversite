@@ -130,7 +130,7 @@ def week_results(request, week=None):
     has_permission  = (u.is_staff or u.is_superuser)
     # if week is defined - always show results. They will be processed
     # if it is None and it is second waiver period and user is staff allow week to stay None
-    show_unprocessed = (not week) and has_permission and util.is_2_waiver_period()
+    show_unprocessed = (not week) and has_permission
 
     if week:
         week = int(week)
