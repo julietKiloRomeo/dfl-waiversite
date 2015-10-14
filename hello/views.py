@@ -130,7 +130,7 @@ def week_results(request, week=None):
     has_permission  = (u.is_staff or u.is_superuser)
     # if week is defined - always show results. They will be processed
     # if it is None and it is second waiver period and user is staff allow week to stay None
-    show_unprocessed = (not week) and has_permission
+    show_unprocessed = (not week) and has_permission and util.is_2_waiver_period()
 
     if week:
         week = int(week)
@@ -148,6 +148,10 @@ def week_results(request, week=None):
     else:        
         # if week is None, unprocessed bids will be shown
         rounds, droplist = util.round_results(week=week)
+        if not rounds:
+            week = this_week - 1
+            rounds, droplist = util.round_results(week=week)
+            
         return render(request, 'results.html', {'rounds':rounds, 
                                                 'droplist':droplist, 
                                                 'weeks': range( 1, this_week ), 
