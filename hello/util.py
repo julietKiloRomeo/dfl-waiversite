@@ -112,23 +112,10 @@ def add_player(p):
     m = re.search('team/([0-9]{1,2})', dfl_owner[0])
     if m:
         ID = int(m.group(1))
-    else:
-        ID = None
-        
-    if ID:
-        username = dfl_owner[1]
-        if User.objects.filter(username=username).exists():
-            u = User.objects.get(username=username)
-        else:
-            u = User.objects.create_user(username, 'asd@gmail.com', 'dfl_is_#1')
-        
-        team, created = Team.objects.update_or_create(nfl_id = ID,
-                                                      defaults ={'name' : dfl_owner[1], 
-                                                                 'owner' : u, 
-                                                                 'account' : 150})
+        team = Team.objects.get(nfl_id=ID)
     else:
         team = None
-
+        
     Player.objects.update_or_create(nfl_id   = p['id'],
                            defaults={ 'name' : p['name'], 
                            'nflteam' : p['team'],
