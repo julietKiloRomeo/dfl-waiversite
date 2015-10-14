@@ -174,7 +174,7 @@ def time_until_open():
 
 def is_2_waiver_period():
     current_time  = timezone.now()
-    is_w_after_14 = (current_time.weekday() == 2) and current_time.hour > 14
+    is_w_after_14 = (current_time.weekday() == 2) and current_time.hour >= 14
     is_thursday   = current_time.weekday() == 3
     is_f_after_4  = (current_time.weekday() == 4) and current_time.hour > 4
     
