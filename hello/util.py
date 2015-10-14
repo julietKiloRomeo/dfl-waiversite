@@ -169,7 +169,7 @@ def last_wednesday_at_14():
     return l_w_at_14
 
 def time_until_open():
-    next_tuesday_at_06  = last_wednesday_at_14() + datetime.timedelta(weeks=1, days=-1, hours=-8)
+    next_tuesday_at_06  = last_wednesday_at_14() + datetime.timedelta(weeks=2, days=-1, hours=-8)
     return next_tuesday_at_06 - timezone.now()
 
 def is_2_waiver_period():
@@ -183,7 +183,7 @@ def is_2_waiver_period():
 def is_1_waiver_period():
     current_time            = timezone.now()
     is_tuesday_after_06     = current_time.weekday() == 1 and current_time.hour >= 6
-    is_w_before_14          = (current_time.weekday() == 2) and current_time.hour <= 14
+    is_w_before_14          = (current_time.weekday() == 2) and current_time.hour < 12
     
     return is_tuesday_after_06 or is_w_before_14
 

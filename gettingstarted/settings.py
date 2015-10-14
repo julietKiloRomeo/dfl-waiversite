@@ -125,7 +125,7 @@ STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
 SHOW_RESULTS            = 1
 SHOW_RESULTS_FOR_SU     = 1
 SHOW_RESULTS_FOR_STAFF  = 1
-LOCK_BIDS               = 1
+LOCK_BIDS               = 0
 
 
 if os.environ.get('IS_LOCAL'):
@@ -138,5 +138,5 @@ if os.environ.get('IS_LOCAL'):
             'HOST': 'localhost',
             'PORT': '',    }
     }
-#    DEBUG           = True
-#    TEMPLATE_DEBUG  = True
+    DEBUG           = True
+    TEMPLATE_DEBUG  = True
