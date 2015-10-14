@@ -1,14 +1,10 @@
 from django.conf.urls import patterns, include, url
 
 from django.contrib import admin
-admin.autodiscover()
-
 from django.contrib.auth.views import login, logout, password_change
-
-
-
-
 import hello.views
+
+admin.autodiscover()
 
 urlpatterns = patterns('',
     url(r'^login/$',  login,  {'template_name' : 'login.html' }, name='login'),
@@ -24,13 +20,4 @@ urlpatterns = patterns('',
     url(r'^search/?$', hello.views.search, name='search'),
     url(r'^$', hello.views.index, name='index'),
     url(r'^admin/', include(admin.site.urls)),
-
 )
-
-from django.conf import settings
-
-if settings.DEBUG:
-    urlpatterns +=  patterns('', 
-                             url(r'^media/(?P<path>.*)$', 'django.views.static.serve', 
-                                 {'document_root':settings.MEDIA_ROOT} ),
-                            )

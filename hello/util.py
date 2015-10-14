@@ -76,7 +76,7 @@ def query(name):
 
 
 def scrapeteam(id):
-    url = 'http://fantasy.nfl.com/league/395388/team/%.0f' % id
+    url        = 'http://fantasy.nfl.com/league/395388/team/%.0f' % id
     rows, soup = url_rows(url)
     #        <li class="first"><em>Rank</em> <strong>7</strong></li>
     rank_ul    = soup.find_all('ul', {"class": re.compile("^teamStats")}  )[0]

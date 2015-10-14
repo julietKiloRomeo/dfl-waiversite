@@ -103,12 +103,13 @@ ALLOWED_HOSTS = ['*']
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
 
-ENV_PTH = os.path.abspath(os.path.dirname(__file__))
+ENV_PTH     = os.path.abspath(os.path.dirname(__file__))
+BASE_DIR    = os.path.dirname(os.path.abspath(__file__))
 
-MEDIA_ROOT = os.path.join(ENV_PTH,'media/')
+
+MEDIA_ROOT = os.path.join(BASE_DIR,'media/')
 MEDIA_URL  = '/media/'
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 STATIC_ROOT = os.path.join(BASE_DIR,'staticfiles')
 STATIC_URL = '/static/'
 
@@ -137,5 +138,5 @@ if os.environ.get('IS_LOCAL'):
             'HOST': 'localhost',
             'PORT': '',    }
     }
-DEBUG           = True
-TEMPLATE_DEBUG  = True
+#    DEBUG           = True
+#    TEMPLATE_DEBUG  = True

@@ -6,12 +6,12 @@
 {{ editdata }}
 <div class="container">
     <div class="row">
-        <div class="col-sm-6"> 
+        <div class="col-sm-10"> 
             {{team.name}} (last logged in {{team.owner.last_login | date:"D j M H:i" }})
         </div>
-        <div class="col-sm-6">  
+        <div class="col-sm-2">
             {% if team.avatar %}
-                <img src= "{{ team.avatar.url }}" >
+                <img src= "{% static team.owner.username %}.jpg" >
             {% endif %} 
         </div>
     </div>

@@ -29,13 +29,13 @@ class Player(models.Model):
         else:    
             return '%20s ' % (self.name)
 
-
 class Team(models.Model):
     name    = models.CharField(max_length=100)
     account = models.IntegerField()
     owner   = models.OneToOneField(User)
     nfl_id  = models.IntegerField(unique=True)
-    avatar  = models.ImageField(upload_to="media/", blank=True, null=True)
+    # upload_to = "f"  will upload img.jpg to MEDIA_ROOT/f/img.jpg
+    avatar  = models.ImageField(upload_to="", blank=True, null=True)
     league_pos  = models.IntegerField(default=0)
     def __unicode__(self):
         return self.name
@@ -43,6 +43,5 @@ class Team(models.Model):
         if player.dflteam==self:
             player.dflteam = None
             player.save()
-
 
 
