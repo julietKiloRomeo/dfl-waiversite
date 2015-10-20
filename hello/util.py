@@ -78,9 +78,11 @@ def query(name):
 def scrapeteam(id):
     url        = 'http://fantasy.nfl.com/league/395388/team/%.0f' % id
     rows, soup = url_rows(url)
-    #        <li class="first"><em>Rank</em> <strong>7</strong></li>
-    rank_ul    = soup.find_all('ul', {"class": re.compile("^teamStats")}  )[0]
-    rank       = rank_ul.find_all('li', {"class": re.compile("^first")}  )[0].strong.contents[0]
+    #        <span class="teamRank teamId-3">(8)</span>
+#    rank_ul    = soup.find_all('span', {"class": re.compile("^teamRank teamId")}  )[0]
+#    rank       = rank_ul.find_all('li', {"class": re.compile("^first")}  )[0].strong.contents[0]
+    rank       = soup.find_all('span', {"class": re.compile("^teamRank")}  )[0].contents[0][1:-1]
+
 
     
     
@@ -251,3 +253,45 @@ def round_results(commit=False, week=None):
         
     return (rounds, droplist)
         
+        
+class nfl_login():
+    login_url       = 'https://id2.s.nfl.com/fans/login?returnTo=http://www.nfl.com/fantasyfootball'
+    league_url      = 'http://fantasy.nfl.com/league/395388'
+    management_url  = 'http://fantasy.nfl.com/league/395388/manage'
+    addplayer_url   = 'http://fantasy.nfl.com/league/395388/manage/teamrosteraddplayerconfirm'
+
+    def __init__(self):
+        self.session = requests.session()
+    def login(self):
+        payload = {'username': 'jimmy.kjaersgaard@gmail.com', 
+                   'password': 'eskadron',
+                   'cookiePersisted':'on',
+                   'succesUrl':'',
+                   's':'',
+                   'modal':'1'}
+        # do login
+        self.session.post(self.login_url, data=payload)
+
+    def is_logged_in(self):
+        # if Tommy, Thomas or I am logged in and has permission, management page will display properly
+        r = self.session.get(self.management_url)
+        m = re.search('League Management', r.content)
+        return m is not None
+            
+    # this has to be called shortly after add/drop or someone else may have performed a transaction - the function looks for the latest message
+    def add_drop_succes(self, payload):
+        # load frontpage of league
+        r       = self.session.get(self.league_url)
+        # look for latest add/drop message and parse out (team, add, drop)
+        pattern = 'class="teamName teamId-(?P<team>[0-9]*)">.*?added.*?leagueId=395388&playerId=(?P<add>[0-9]*).*?and dropped.*?playerId=(?P<drop>[0-9]*)'
+        m       = re.findall(pattern, r.content)
+        # do they match the attempted transaction?    
+        return m[0][0]==payload['teamId'] and m[0][1]==payload['addPlayerId'] and m[0][2]==payload['dropPlayerId']
+        
+    def add_drop(self, team, to_add, to_drop):
+        payload = {'teamId':team,
+                   'addPlayerId':to_add,
+                   'dropPlayerId':to_drop,
+                   'jSubmit':'Submit'}
+        self.session.post(self.addplayer_url, data=payload)
+        return self.add_drop_succes(payload)
