@@ -17,7 +17,7 @@ class Bid(models.Model):
             s += '      WINNER'
         if self.swapped_on_nfl:
             s += ' WAS PROCESSED'
-        return 
+        return s
     def is_valid(self):
         return (self.amount <= self.team.account) and (self.drop.dflteam == self.team)         
     def frac_amount(self):
