@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.http import HttpResponseRedirect
+from django.http import HttpResponse
 import util
 from django.contrib import auth
 from models import Player, Team, Bid
@@ -21,6 +22,30 @@ def delete_bid(request, bid_id):
         return HttpResponseRedirect("/team")
     else:
         return HttpResponseRedirect("/login")
+
+def process_on_nfl(request, bid_id):
+    u               = request.user
+    has_permission  = (u.is_staff or u.is_superuser)
+    bid             = Bid.objects.get(pk=bid_id)
+    if has_permission:
+        league_site = util.nfl_login()
+        league_site.login()
+        team_id = str(bid.team.nfl_id)        
+        add_id  = str(bid.player.nfl_id)        
+        drop_id = str(bid.drop.nfl_id)
+
+        if not settings.IS_LOCAL: 
+            success = league_site.add_drop(team_id, add_id, drop_id)
+    
+            if success:
+                bid.swapped_on_nfl = True
+                bid.save()
+            return HttpResponseRedirect("/")
+        else:
+            content = 'Logged in to nfl.com. Ready to add %s and drop %s for team %s (%s)' % (add_id, drop_id, bid.team.name, team_id) 
+            return HttpResponse(content)
+            
+        
     
 def bid(request, nfl_id):
     u           = request.user

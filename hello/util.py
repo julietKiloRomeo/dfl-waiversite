@@ -263,7 +263,7 @@ class nfl_login():
     league_url      = 'http://fantasy.nfl.com/league/395388'
     management_url  = 'http://fantasy.nfl.com/league/395388/manage'
     addplayer_url   = 'http://fantasy.nfl.com/league/395388/manage/teamrosteraddplayerconfirm'
-
+    
     def __init__(self):
         self.session = requests.session()
     def login(self):

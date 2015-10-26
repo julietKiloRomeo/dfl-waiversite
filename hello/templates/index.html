@@ -19,40 +19,56 @@
 
 <div class="container">
   <div class="row">
-    <div class="col-sm-6">
+    <div class="col-sm-8">
         <h3>Last weeks trades</h3>
           <table class="table table-striped">
             <thead>
               <tr>
                 <th>Team</th>
-                <th>Amount</th>
+                <th style="text-align:center">Amount</th>
                 <th>Trade</th>
+                {% if has_permission %}
+                    <th style="text-align:center"> Process </th>
+                {% endif%}
               </tr>
             </thead>
             <tbody>
             {% for t in trades %}
                 <tr>
                     <td> {{ t.team.name  }} </td>
-                    <td> {{ t.amount  }}$ </td>
+                    <td style="text-align:center"> {{ t.amount  }}$ </td>
                     <td> {{ t.player.name  }} for {{ t.drop.name  }} </td>
+                    {% if has_permission %}
+                        <td  style="text-align:center">
+                        {% if not t.swapped_on_nfl %}
+                            <a class="btn btn-danger btn-xs" href="/process_on_nfl/{{t.pk}}"> 
+                                    <span class="glyphicon glyphicon-transfer" style="text-align:center" ></span>
+                             </a>
+                        {% else %}
+                             <span class="glyphicon glyphicon-check"></span>
+                        {% endif %}
+                        </td>
+                    {% endif%}
                 </tr>
             {% endfor %}
             </tbody>
           </table>
     </div> 
-    <div class="col-sm-6">
+    <div class="col-sm-4">
         <h3>Team Accounts</h3>
           <table class="table table-striped">
             <thead>
               <tr>
-                <th>Team</th>
+                <th style="text-align:right">Team</th>
+                <th></th>
                 <th>Funds</th>
               </tr>
             </thead>
             <tbody>
             {% for tm in teams %}
                 <tr>
-                    <td> <a href="/team/{{tm.nfl_id}}"> {{ tm  }} </a> </td>
+                    <td style="text-align:right"> <a href="/team/{{tm.nfl_id}}"> {{ tm  }} </a> </td>
+                    <td></td>
                     <td> {{ tm.account  }} $ </td>
                 </tr>
             {% endfor %}

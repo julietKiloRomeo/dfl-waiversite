@@ -10,6 +10,7 @@ class Bid(models.Model):
     date        = models.DateTimeField('date placed', auto_now_add=True)
     processed   = models.BooleanField(default=False)
     succesful   = models.BooleanField(default=False)
+    swapped_on_nfl   = models.BooleanField(default=False)
     def __unicode__(self):
         return '%20s %d$ : %s for %s (%.0f)' % (self.team.name, self.amount, self.player.name, self.drop.name, self.priority)
     def is_valid(self):

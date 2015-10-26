@@ -126,6 +126,7 @@ SHOW_RESULTS            = 1
 SHOW_RESULTS_FOR_SU     = 1
 SHOW_RESULTS_FOR_STAFF  = 1
 LOCK_BIDS               = 0
+IS_LOCAL                = False
 
 
 if os.environ.get('IS_LOCAL'):
@@ -140,3 +141,4 @@ if os.environ.get('IS_LOCAL'):
     }
     DEBUG           = True
     TEMPLATE_DEBUG  = True
+    IS_LOCAL        = True
