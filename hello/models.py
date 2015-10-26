@@ -12,7 +12,12 @@ class Bid(models.Model):
     succesful   = models.BooleanField(default=False)
     swapped_on_nfl   = models.BooleanField(default=False)
     def __unicode__(self):
-        return '%20s %d$ : %s for %s (%.0f)' % (self.team.name, self.amount, self.player.name, self.drop.name, self.priority)
+        s = '%20s %d$ : %s for %s (%.0f)' % (self.team.name, self.amount, self.player.name, self.drop.name, self.priority)
+        if self.succesful:
+            s += '      WINNER'
+        if self.swapped_on_nfl:
+            s += ' WAS PROCESSED'
+        return 
     def is_valid(self):
         return (self.amount <= self.team.account) and (self.drop.dflteam == self.team)         
     def frac_amount(self):
