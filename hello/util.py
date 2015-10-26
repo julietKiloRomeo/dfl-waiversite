@@ -158,9 +158,13 @@ def last_wednesday_at_14():
     return l_w_at_14
 
 def time_until_open():
-    current_time        = timezone.localtime(timezone.now())
-    add_two_weeks       = current_time.weekday() <= 2
-    next_tuesday_at_06  = last_wednesday_at_14() + datetime.timedelta(weeks=1 + 1*add_two_weeks, days=-1, hours=-8)
+    current_time            = timezone.localtime(timezone.now())
+    is_first_part_of_week   = current_time.weekday() < 1 or (current_time.weekday() == 1 and current_time.hour < 6)
+    add_one_week            = not is_first_part_of_week
+    monday_of_current_week  = current_time.date() - datetime.timedelta(days=current_time.weekday())
+    monday_of_current_week  = datetime.datetime.combine(monday_of_current_week, datetime.time(0))
+    monday_of_current_week  = timezone.make_aware(monday_of_current_week, timezone.get_current_timezone())
+    next_tuesday_at_06      = monday_of_current_week + datetime.timedelta(weeks=1*add_one_week, days=1, hours=6)
     return next_tuesday_at_06 - timezone.now()
 
 def is_1_waiver_period():
