@@ -8,9 +8,9 @@ from django.conf import settings
 from django.utils import timezone
 
 def index(request):
-    trades = util.latest_trades()
-    N_bids = len(Bid.objects.filter(processed=False))
-    teams = Team.objects.all().order_by('name')
+    trades  = util.latest_trades()
+    N_bids  = len(Bid.objects.filter(processed=False))
+    teams   = Team.objects.all().order_by('name')
     return render(request, 'index.html', {'trades': trades, 'N':N_bids, 'teams':teams})
 
 def delete_bid(request, bid_id):
@@ -173,7 +173,7 @@ def week_results(request, week=None):
     else:        
         # if week is None, unprocessed bids will be shown
         rounds, droplist = util.round_results(week=week)
-        if not rounds:
+        if not rounds and not week:
             week = this_week - 1
             rounds, droplist = util.round_results(week=week)
             

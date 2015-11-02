@@ -9,12 +9,12 @@ import requests
 from bs4 import BeautifulSoup as bs
 import re
 from models import Player, Team, Bid
-from django.contrib.auth.models import User
 import time
 import datetime
 from django.utils import timezone
 
 def waiver_week(d):
+    # 9 sep 2015 was a Wednesday
     w_0 = datetime.datetime(year=2015, month=9, day=9, hour=14)
     w_0 =  timezone.make_aware(w_0, timezone.get_current_timezone())
     return (d-w_0).days//7+1
@@ -167,15 +167,17 @@ def time_until_open():
     next_tuesday_at_06      = monday_of_current_week + datetime.timedelta(weeks=1*add_one_week, days=1, hours=6)
     return next_tuesday_at_06 - timezone.now()
 
-def is_1_waiver_period():
-    current_time            = timezone.localtime(timezone.now())
+def is_1_waiver_period(t=None):
+    if not t:
+        t = timezone.now()
+    current_time            = timezone.localtime(t)
     is_tuesday_after_06     = current_time.weekday() == 1 and current_time.hour >= 6
     is_w_before_14          = (current_time.weekday() == 2) and current_time.hour < 14
     
     return is_tuesday_after_06 or is_w_before_14
 
-def is_2_waiver_period():    
-    return not is_1_waiver_period()
+def is_2_waiver_period(t=None):    
+    return not is_1_waiver_period(t)
 
 def clear_all_bids():
     for b in Bid.objects.all():
@@ -194,19 +196,30 @@ def divide_bids(bids):
         tmp = sorted(rounds[p]['bids'], key=lambda b: b.frac_amount(), reverse=True) 
         rounds[p]['bids'] = tmp
     
+    # rounds will be a dict with players as keys and bids sorted by non-tieable amount for each player
     return rounds
 
-def resolve_round(rounds, droplist):
-    # use divide_bids to create rounds dict
-    # go through all rounds
+def resolve_round(rounds, droplist, money_left):
+    # call recursively to resolve one round at a time        
+    # use divide_bids to create initial rounds dict with bids sorted by frac amounts
+
+    # this will hold 
     round_priority  = []
     bids_to_process = []
+    
+    # rounds = {'player_1':{'winner':None, 'bids':[b1, b2, ...], 'nonvalid':[]},
+    #           'player_2':...}
+
+    # first sort all rounds by priority
+    # if round has already been resolved it will not be included in the ordering
     for p in rounds.keys():
         is_resolved = rounds[p]['winner']
         if not is_resolved:
+            # take first bid in bids - they have already been sorted
             for b in rounds[p]['bids']:
                 db_bid = Bid.objects.get(pk=b.pk)
-                if not db_bid.drop.pk in droplist:
+                bid_is_valid = (not db_bid.drop.pk in droplist) and db_bid.amount <= money_left[db_bid.team.pk]
+                if bid_is_valid:
                     round_priority.append( b )
                     break
                 else:
@@ -214,6 +227,8 @@ def resolve_round(rounds, droplist):
             if not round_priority:
                 rounds[p]['winner'] = 'None valid'
     round_priority  = sorted(round_priority, key=lambda b: b.priority)
+    
+    
     if round_priority:
         prio_to_resolve = round_priority[0].priority
         while len(round_priority) and round_priority[0].priority == prio_to_resolve:
@@ -236,12 +251,18 @@ def round_results(commit=False, week=None):
 
     rounds          = divide_bids(current_bids)
     
-    rounds_left = True
-    droplist    = []
+    rounds_left    = True
+    droplist       = []
+    money_left    = {}
+    for team in Team.objects.all():
+        money_left[team.pk] = team.account
+    
     while rounds_left>0:
-        rounds, bids_to_process = resolve_round(rounds, droplist)
+        rounds, bids_to_process = resolve_round(rounds, droplist,money_left)
         for b in bids_to_process:
             droplist.append(b.drop.pk)
+            money_left[b.team.pk] -= b.amount
+
             if commit:
                 db_team = Team.objects.get(pk=b.team.pk)
                 db_bid  = Bid.objects.get(pk=b.pk)
