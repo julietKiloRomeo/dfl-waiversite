@@ -53,7 +53,7 @@ def bid(request, nfl_id):
     if allow_bids:
         p               = Player.objects.get(nfl_id=nfl_id)
         team            = Team.objects.get(owner=u)
-        roster          = Player.objects.filter(dflteam=team)
+        roster          = Player.objects.filter(dflteam=team).order_by('position')
         if request.method == 'POST':
             val         = int(request.POST.get('bidvalue'))
             if val < 0:
@@ -112,7 +112,7 @@ def team(request, team_id=None):
             b.drop      = Player.objects.get(pk=drop)
             b.save()
 
-        roster  = Player.objects.filter(dflteam=team)
+        roster  = Player.objects.filter(dflteam=team).order_by('position')
 
         return render(request, 'team.html', {'user': request.user, 
                                                  'team':team, 

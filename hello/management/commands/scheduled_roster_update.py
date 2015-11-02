@@ -12,10 +12,10 @@ import datetime
 class Command(BaseCommand):
     def handle(self, *args, **options):
         current_time = datetime.datetime.now()
-        is_wednesday = current_time.weekday() == 2
+        is_wednesday_or_tuesday = current_time.weekday() == 2 or current_time.weekday() == 1
 
-        if is_wednesday:
+        if is_wednesday_or_tuesday:
             update_league()
             self.stdout.write('League has been updated')
         else:
-            self.stdout.write('Not wedbesday. No update. See you tomorrow.')
+            self.stdout.write('Not wednesday. No update. See you tomorrow.')

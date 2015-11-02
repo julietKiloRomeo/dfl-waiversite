@@ -24,16 +24,34 @@ class Bid(models.Model):
         # break ties
         return self.amount + self.team.account/151.0/10 + self.team.league_pos/13.0/100
 
-class Player(models.Model):
+class Player(models.Model):    
+    QB  = 0    
+    RB  = 1    
+    WR  = 2    
+    TE  = 3    
+    DEF = 4    
+    K   = 5    
+    POSITIONS = ((QB , 'QB'),
+                 (RB , 'RB'),
+                 (WR , 'WR'),
+                 (TE , 'TE'),
+                 (DEF, 'DEF'),
+                 (K  , 'K') )
+
+    
     name        = models.CharField(max_length=100)
     nflteam     = models.CharField(max_length=100, null=True)
     dflteam     = models.ForeignKey('Team', null=True)
     nfl_id      = models.IntegerField(unique=True)
+    position    = models.IntegerField(choices = POSITIONS, null=True, default = None)
     def __unicode__(self):
         if self.dflteam:
             return '%20s (%s)' % (self.name, self.dflteam.name)
         else:    
             return '%20s ' % (self.name)
+            
+    def pos_and_name(self):
+        return '%-5s  %s' % (self.POSITIONS[self.position][1], self.name)
 
 class Team(models.Model):
     name    = models.CharField(max_length=100)

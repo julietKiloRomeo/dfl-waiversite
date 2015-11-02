@@ -32,26 +32,26 @@ def url_rows(url):
     r = requests.get(url)
     page = r.content
     soup = bs(page, 'html.parser')
-    rows = soup.find_all('tr', {"class": re.compile("^player")})
+    rows = soup.find_all('tr', {"class": re.compile("^player")}  )
     return (rows, soup)
 
 def searchresult_2_player(row):
-    tmp     = row.find_all('td')
-    info    = tmp[1] 
-
-    links   = info.find_all('a')
-    e       = info.find_all('em')
+    # if row is from query    
+    playercard  = row.find_all('td', {"class": re.compile("^playerNameAndInfo")}  )[0]
+    links       = playercard.find_all('a')
+    e           = playercard.find_all('em')
     ID_txt      = links[0].get('href')
     name        = links[0].contents[0]
     pos_team    = e[0].contents[0]
     
-    owner_data = row.find_all('td', {"class":"playerOwner"})[0]
-    if len(owner_data.find_all('a')):
-        owner_url   = owner_data.a.get('href')
-        owner_name  = owner_data.a.contents[0]
-    else:
-        owner_url   = ''
-        owner_name  = ''
+    owner_data = row.find_all('td', {"class":"playerOwner"})
+    owner_url   = ''
+    owner_name  = ''
+    if owner_data:
+        if len(owner_data[0].find_all('a')):
+            owner_url   = owner_data[0].a.get('href')
+            owner_name  = owner_data[0].a.contents[0]
+
     
     m = re.search('playerId=([0-9]{2,12})', ID_txt)
     if m:
@@ -78,34 +78,18 @@ def query(name):
 def scrapeteam(id):
     url        = 'http://fantasy.nfl.com/league/395388/team/%.0f' % id
     rows, soup = url_rows(url)
+
     #        <span class="teamRank teamId-3">(8)</span>
-#    rank_ul    = soup.find_all('span', {"class": re.compile("^teamRank teamId")}  )[0]
-#    rank       = rank_ul.find_all('li', {"class": re.compile("^first")}  )[0].strong.contents[0]
-    rank       = soup.find_all('span', {"class": re.compile("^teamRank")}  )[0].contents[0][1:-1]
+    rank_ul    = soup.find_all('span', {"class": re.compile("^teamRank teamId")}  )
+    if rank_ul:        
+        rank       = rank_ul[0].find_all('li', {"class": re.compile("^first")}  )[0].strong.contents[0]
+    else:
+        rank       = soup.find_all('span', {"class": re.compile("^teamRank")}  )[0].contents[0][1:-1]
 
-
-    
-    
     players = []    
-    for r in rows:        
-        links   = r.find_all('a', {"class": re.compile("^playerCard")}  )
-        if links:
-            name    = links[0].contents[0]
-            ID_txt  = links[0].get('href')
-            ems     = r.find_all('em')
-            
-            m = re.search('playerId=([0-9]{2,12})', ID_txt)
-            if m:
-                ID = m.group(1)
-            else:
-                ID = None
-            m = re.search('- *([A-Z]{1,5})', ems[0].contents[0])
-            if m:
-                team = m.group(1)
-            else:
-                team = None
-                
-            players.append( (name, ID,team) )
+    for r in rows:
+        player_dict = searchresult_2_player(r)        
+        players.append( player_dict )
     
     return (players, int(rank))
 
@@ -117,10 +101,26 @@ def add_player(p):
         team = Team.objects.get(nfl_id=ID)
     else:
         team = None
+
+    # set position
+    if p['pos'] == u'QB':
+        pos_enum = Player.QB
+    if p['pos'] == u'RB':
+        pos_enum = Player.RB
+    if p['pos'] == u'WR':
+        pos_enum = Player.WR
+    if p['pos'] == u'TE':
+        pos_enum = Player.TE
+    if p['pos'] == u'DEF':
+        pos_enum = Player.DEF
+    if p['pos'] == u'K':
+        pos_enum = Player.K
+
         
     Player.objects.update_or_create(nfl_id   = p['id'],
                            defaults={ 'name' : p['name'], 
                            'nflteam' : p['team'],
+                           'position' : pos_enum, 
                            'dflteam' : team} )
 
 def add_from_search(q):
@@ -140,10 +140,29 @@ def update_league():
         team.league_position = rank
         team.save()
         for p in players:        
-            Player.objects.update_or_create(nfl_id   = int(p[1]),
-                                   defaults={ 'name' : p[0], 
-                                   'nflteam' : p[2],
+            # set position
+            pos_enum = None
+            print p
+            if p['pos'] == u'QB':
+                pos_enum = Player.QB
+            if p['pos'] == u'RB':
+                pos_enum = Player.RB
+            if p['pos'] == u'WR':
+                pos_enum = Player.WR
+            if p['pos'] == u'TE':
+                pos_enum = Player.TE
+            if p['pos'] == u'DEF':
+                pos_enum = Player.DEF
+            if p['pos'] == u'K':
+                pos_enum = Player.K
+
+            Player.objects.update_or_create(nfl_id   = int(p['id']),
+                                   defaults={ 'name' : p['name'], 
+                                   'nflteam' : p['team'],
+                                   'position' : pos_enum, 
                                    'dflteam' : team} )
+
+
 
 def last_wednesday_at_14():
     current_time            = timezone.localtime(timezone.now())

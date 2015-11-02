@@ -173,4 +173,21 @@ class AuctionTestCase(TestCase):
         
         self.assertTrue( util.is_2_waiver_period(t = t_2_w) )        
         
+
+    def test_scrapers(self):
+        util.add_from_search('Tom Brady')
+        
+        brady = Player.objects.get(name__icontains = "brady")        
+
+        self.assertEqual(brady.name, 'Tom Brady')        
+        self.assertEqual(brady.position, Player.QB)        
+
+        players, rank = util.scrapeteam(1)
+
+        self.assertTrue(rank < 13 and rank > 0)        
+        self.assertTrue(len(players) > 14 )        
+
+
+
+
         
