@@ -39,30 +39,31 @@ def searchresult_2_player(row):
     # if row is from query    
     playercard  = row.find_all('td', {"class": re.compile("^playerNameAndInfo")}  )[0]
     links       = playercard.find_all('a')
-    e           = playercard.find_all('em')
-    ID_txt      = links[0].get('href')
-    name        = links[0].contents[0]
-    pos_team    = e[0].contents[0]
+    if links:
+        e           = playercard.find_all('em')
+        ID_txt      = links[0].get('href')
+        name        = links[0].contents[0]
+        pos_team    = e[0].contents[0]
+        
+        owner_data = row.find_all('td', {"class":"playerOwner"})
+        owner_url   = ''
+        owner_name  = ''
+        if owner_data:
+            if len(owner_data[0].find_all('a')):
+                owner_url   = owner_data[0].a.get('href')
+                owner_name  = owner_data[0].a.contents[0]
     
-    owner_data = row.find_all('td', {"class":"playerOwner"})
-    owner_url   = ''
-    owner_name  = ''
-    if owner_data:
-        if len(owner_data[0].find_all('a')):
-            owner_url   = owner_data[0].a.get('href')
-            owner_name  = owner_data[0].a.contents[0]
-
+        
+        m = re.search('playerId=([0-9]{2,12})', ID_txt)
+        if m:
+            ID = m.group(1)
     
-    m = re.search('playerId=([0-9]{2,12})', ID_txt)
-    if m:
-        ID = m.group(1)
-
-    m = re.search('([A-Z]{1,4}) ?-? ?([A-Z]{2,5})?', pos_team)
-    if m:
-        pos     = m.group(1)
-        team    = m.group(2)
-
-    return {'name':name, 'pos':pos, 'team':team, 'id':ID, 'owner':(owner_url, owner_name)}        
+        m = re.search('([A-Z]{1,4}) ?-? ?([A-Z]{2,5})?', pos_team)
+        if m:
+            pos     = m.group(1)
+            team    = m.group(2)
+    
+        return {'name':name, 'pos':pos, 'team':team, 'id':ID, 'owner':(owner_url, owner_name)}        
 
 def query(name):
     url = 'http://fantasy.nfl.com/league/395388/players/search?searchQuery=%s' % (name)
@@ -89,7 +90,8 @@ def scrapeteam(id):
     players = []    
     for r in rows:
         player_dict = searchresult_2_player(r)        
-        players.append( player_dict )
+        if player_dict:
+            players.append( player_dict )
     
     return (players, int(rank))
 

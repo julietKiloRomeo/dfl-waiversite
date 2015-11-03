@@ -6,6 +6,7 @@ from django.contrib import auth
 from models import Player, Team, Bid
 from django.conf import settings
 from django.utils import timezone
+from django.db.models import Sum
 
 def index(request):
     trades  = util.latest_trades()
@@ -72,6 +73,18 @@ def bid(request, nfl_id):
                 priority += 1
             b           = Bid(team=team, amount=val, player=p, drop=dropee, priority=priority)
             b.save()
+                
+            # if bid-sum is larger than account, all bids must have unique prio
+            bidsum      = Bid.objects.filter(team=team).filter(processed=False).aggregate(Sum('amount'))
+            
+            if bidsum['amount__sum'] > team.account:            
+                active_bids = Bid.objects.filter(team=team).filter(processed=False).order_by('priority', 'date')
+                count = 0
+                for b in active_bids:
+                    count += 1
+                    b.priority=count
+                    b.save()
+                
             return HttpResponseRedirect("/team")
         else:
             return render(request, 'bid.html', {'player': p, 'roster':roster, 'team':team})
