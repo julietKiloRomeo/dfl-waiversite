@@ -86,76 +86,97 @@ class AuctionTestCase(TestCase):
                                    player   = players[8], 
                                    drop     = Player.objects.get(name='wr3'))
 
-
-
     def test_auctions(self):
         """Test several auction scenarios"""
         results, droplist = util.round_results(commit=False)
 
-        print 'Test without commiting'
+        print ''
+        print '----------------- Test without commit: ------------------------'
         
         drop1 = Player.objects.get(name='rb3')
         drop2 = Player.objects.get(name='wr2')
 
-        for p in results.keys():
-            print p.name
-            for b in results[p]['bids']:
-                print b
-            if isinstance(results[p]['winner'], basestring):
-                print 'Won by %s\n' % results[p]['winner']
-            else:
-                print 'Won by %s\n' % results[p]['winner'].team.name
 
+        print '%40s' % ('Check auction winners:'),
         self.assertEqual(droplist[0], drop1.pk)
         self.assertEqual(droplist[1], drop2.pk)
+        print ' OK'
 
-        print 'Check accounts'
+        print '%40s' % ('Check accounts:'),
         teams = Team.objects.all()
         for t in teams:
-            print '%s : %d' % (t.name, t.account)
             self.assertEqual(t.account, 150)
+        print ' OK'
             
     def test_auctions_commit(self):
         results, droplist = util.round_results(commit=True)
 
-        print 'Test with commiting'
+        print ''
+        print '------------------- Test with commit: --------------------------'
 
         drop1 = Player.objects.get(name='rb3')
         drop2 = Player.objects.get(name='wr2')
-
-        for p in results.keys():
-            print p.name
-            for b in results[p]['bids']:
-                print b
-            if isinstance(results[p]['winner'], basestring):
-                print 'Won by %s\n' % results[p]['winner']
-            else:
-                print 'Won by %s\n' % results[p]['winner'].team.name
-
+        
+        print '%40s' % ('Check auction winners:'),
         self.assertEqual(droplist[0], drop1.pk)
         self.assertEqual(droplist[1], drop2.pk)
+        print ' OK'
 
-        print 'Check accounts'
+        invalid_drop = Bid.objects.filter(player__name = 'rb5').filter(drop__name = 'rb3')[0]
+        invalid_funds = Bid.objects.filter(player__name = 'wr1').filter(drop__name = 'wr3')[0]
+                
+        print '%40s' % ('Check invalid drop:'),
+        self.assertEqual(invalid_drop.validity, Bid.DROP)
+        print ' OK'
+
+        print '%40s' % ('Check invalid funds:'),
+        self.assertEqual(invalid_funds.validity, Bid.FUNDS)
+        print ' OK'
+
+        print '%40s' % ('Check accounts:'),
         teams = Team.objects.all()
         accounts = {'a':50, 'b':49, 'c':149}
         for t in teams:
-            print '%s : %d' % (t.name, t.account)
             self.assertEqual(t.account, accounts[t.name])
         self.assertEqual(len(Bid.objects.filter(processed=True)), 7)        
+        print ' OK'
 
-    def test_index(self):
+    def test_results_page(self):
+        print ''
+        print '------------------- Testing results page: --------------------------'
+        results, droplist = util.round_results(commit=True)
+        this_week         = util.waiver_week(timezone.now())
+        url = '/results/%d/' % (this_week)
+        client = Client()
+        response = client.get(url)
+
+        
+        print '%40s' % ('Check wr1 present in html context:'),
+        wr1 = Player.objects.get(name='wr1')
+        self.assertTrue(wr1 in response.context['rounds'].keys())        
+        print ' OK'
+
+
+
+    def test_index_page(self):
+        print ''
+        print '------------------- Testing front page: --------------------------'
         results, droplist = util.round_results(commit=True)
         client = Client()
         response = client.get('/')
-        print response.context['trades']
 #        self.assertContains(response, "No polls are available.")
 #        self.assertQuerysetEqual(response.context['trades'], [])        
+
+        print '%40s' % ('Check for trades in html context:'),
         self.assertEqual(len(response.context['trades']), 0)        
         self.assertEqual(len(Bid.objects.filter(processed=True)), 7)        
         self.assertEqual(len(Bid.objects.filter(succesful=True)), 3)        
+        print ' OK'
         
 
     def test_timer(self):
+        print ''
+        print '------------------- Testing timer functions: --------------------------'
         # monday
         t_2_w = datetime.datetime(year=2015, month=11, day=2, hour=14)
         # tuesday
@@ -164,28 +185,40 @@ class AuctionTestCase(TestCase):
         t_1_w =  timezone.make_aware(t_1_w, timezone.get_current_timezone())
         t_2_w =  timezone.make_aware(t_2_w, timezone.get_current_timezone())
 
-        self.assertTrue( util.is_1_waiver_period(t = t_1_w) )        
+        print '%40s' % ('Monday 14:00 is waiver period 2:'),
         self.assertTrue( util.is_2_waiver_period(t = t_2_w) )        
-        
+        print ' OK'
+
+        print '%40s' % ('Tuesday 07:00 is waiver period 1:'),
+        self.assertTrue( util.is_1_waiver_period(t = t_1_w) )        
+        print ' OK'
+
         # wednesday
         t_2_w = datetime.datetime(year=2015, month=11, day=4, hour=14)
         t_2_w =  timezone.make_aware(t_2_w, timezone.get_current_timezone())
         
+        print '%40s' % ('Wednesday 14:00 is waiver period 2:'),
         self.assertTrue( util.is_2_waiver_period(t = t_2_w) )        
+        print ' OK'
         
-
     def test_scrapers(self):
+        print ''
+        print '------------------- Testing NFL scraper: --------------------------'
         util.add_from_search('Tom Brady')
         
         brady = Player.objects.get(name__icontains = "brady")        
 
+        print '%40s' % ('Scrape Tom Brady from NFL and add to DB:'),
         self.assertEqual(brady.name, 'Tom Brady')        
         self.assertEqual(brady.position, Player.QB)        
+        print ' OK'
 
+        print '%40s' % ('Scrape Superheroes and verify:'),
         players, rank = util.scrapeteam(1)
 
         self.assertTrue(rank < 13 and rank > 0)        
         self.assertTrue(len(players) > 14 )        
+        print ' OK'
 
 
 

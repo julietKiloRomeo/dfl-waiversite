@@ -2,6 +2,13 @@ from django.db import models
 from django.contrib.auth.models import User
         
 class Bid(models.Model):
+    VALID  = 0    
+    DROP   = 1    
+    FUNDS  = 2    
+    VALIDITIES = ((VALID , 'valid'),
+                 (DROP , 'drop'),
+                 (FUNDS , 'funds'))
+
     team        = models.ForeignKey('Team')
     amount      = models.IntegerField()
     priority    = models.IntegerField(default=1)
@@ -11,6 +18,7 @@ class Bid(models.Model):
     processed   = models.BooleanField(default=False)
     succesful   = models.BooleanField(default=False)
     swapped_on_nfl   = models.BooleanField(default=False)
+    validity    = models.IntegerField(choices = VALIDITIES, default = VALID)
     def __unicode__(self):
         s = '%20s %d$ : %s for %s (%.0f)' % (self.team.name, self.amount, self.player.name, self.drop.name, self.priority)
         if self.succesful:

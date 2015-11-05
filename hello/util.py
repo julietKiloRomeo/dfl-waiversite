@@ -215,8 +215,7 @@ def divide_bids(bids):
     for p in rounds.keys():
         tmp = rounds[p]['bids']
         tmp = sorted(rounds[p]['bids'], key=lambda b: b.frac_amount(), reverse=True) 
-        rounds[p]['bids'] = tmp
-    
+        rounds[p]['bids'] = tmp    
     # rounds will be a dict with players as keys and bids sorted by non-tieable amount for each player
     return rounds
 
@@ -244,7 +243,13 @@ def resolve_round(rounds, droplist, money_left):
                     round_priority.append( b )
                     break
                 else:
-                    rounds[p]['nonvalid'].append(b.pk)
+                    if db_bid.amount > money_left[db_bid.team.pk]:
+                        db_bid.validity = Bid.FUNDS
+                    elif db_bid.drop.pk in droplist:
+                        db_bid.validity = Bid.DROP
+                    db_bid.save()
+                    rounds[p]['nonvalid'].append(db_bid.pk)
+                    
             if not round_priority:
                 rounds[p]['winner'] = 'None valid'
     round_priority  = sorted(round_priority, key=lambda b: b.priority)
@@ -271,31 +276,42 @@ def round_results(commit=False, week=None):
         current_bids    = Bid.objects.filter(processed=False)
 
     rounds          = divide_bids(current_bids)
-    
-    rounds_left    = True
-    droplist       = []
-    money_left    = {}
-    for team in Team.objects.all():
-        money_left[team.pk] = team.account
-    
-    while rounds_left>0:
-        rounds, bids_to_process = resolve_round(rounds, droplist,money_left)
-        for b in bids_to_process:
-            droplist.append(b.drop.pk)
-            money_left[b.team.pk] -= b.amount
 
-            if commit:
-                db_team = Team.objects.get(pk=b.team.pk)
-                db_bid  = Bid.objects.get(pk=b.pk)
-                db_team.account -= b.amount
-                db_team.save()
-                db_bid.succesful = True
-                db_bid.save()
-
-        winner_list = [rnd['winner'] for rnd in rounds.itervalues()  ]
-        rounds_left = sum(x is None for x in winner_list)
-    if commit:
-        Bid.objects.all().update(processed=True)
+    if week:
+        # look through processed bids and update the rounds struct instead of calculating it again
+        droplist = []
+        for p in rounds.keys():
+            bids_on_p = rounds[p]['bids']
+            for b in bids_on_p:
+                if b.succesful:
+                    rounds[p]['winner'] = b
+                if not b.validity == Bid.VALID:
+                    rounds[p]['nonvalid'].append(b.pk)
+    else:
+        rounds_left    = True
+        droplist       = []
+        money_left    = {}
+        for team in Team.objects.all():
+            money_left[team.pk] = team.account
+        
+        while rounds_left>0:
+            rounds, bids_to_process = resolve_round(rounds, droplist,money_left)
+            for b in bids_to_process:
+                droplist.append(b.drop.pk)
+                money_left[b.team.pk] -= b.amount
+    
+                if commit:
+                    db_team = Team.objects.get(pk=b.team.pk)
+                    db_bid  = Bid.objects.get(pk=b.pk)
+                    db_team.account -= b.amount
+                    db_team.save()
+                    db_bid.succesful = True
+                    db_bid.save()
+    
+            winner_list = [rnd['winner'] for rnd in rounds.itervalues()  ]
+            rounds_left = sum(x is None for x in winner_list)
+        if commit:
+            Bid.objects.all().update(processed=True)
         
     return (rounds, droplist)
         
