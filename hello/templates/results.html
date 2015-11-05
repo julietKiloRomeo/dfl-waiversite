@@ -37,13 +37,12 @@
     {% for b in round.bids %} 
       <tr>
         <td width="10%"  style="text-align:center">
-{{b.validity}}
             {% if b.validity == FUNDS %} 
-                <i> 
+                <font color="red"> 
             {% endif %}
             {{ b.amount }}$
             {% if b.validity == FUNDS %} 
-                </i> 
+                </font> 
             {% endif %}
         </td>
         <td width="10%" style="text-align:center">{{ b.priority  }}</td>
@@ -58,11 +57,11 @@
         </td>
         <td width="30%">
             {% if b.validity == DROP %} 
-                <i> 
+                <font color="red"> 
             {% endif %}
             {{ b.drop.name  }}
             {% if b.validity == DROP %} 
-                </i> 
+                </font> 
             {% endif %}
         </td>
         <td width="20%">{{ b.date | date:"D j M H:i" }}</td>
