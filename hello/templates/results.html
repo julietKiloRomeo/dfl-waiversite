@@ -36,17 +36,35 @@
     <tbody>
     {% for b in round.bids %} 
       <tr>
-        <td width="10%"  style="text-align:center">{{ b.amount }}$</td>
+        <td width="10%"  style="text-align:center">
+{{b.validity}}
+            {% if b.validity == FUNDS %} 
+                <i> 
+            {% endif %}
+            {{ b.amount }}$
+            {% if b.validity == FUNDS %} 
+                </i> 
+            {% endif %}
+        </td>
         <td width="10%" style="text-align:center">{{ b.priority  }}</td>
-        <td width="30%">  {% if b.pk == round.winner.pk %}
-            <b>
+        <td width="30%">  
+            {% if b.pk == round.winner.pk %}
+                <b>
             {%endif%}
             {{ b.team.name  }}
             {%  if b.pk == round.winner.pk  %}
-            </b>
+                </b>
             {%endif%}
         </td>
-        <td width="30%">{% if b.pk in round.nonvalid %} <i> {% endif %}{{ b.drop.name  }} {% if b.pk in round.nonvalid %} </i> {% endif %}</td>
+        <td width="30%">
+            {% if b.validity == DROP %} 
+                <i> 
+            {% endif %}
+            {{ b.drop.name  }}
+            {% if b.validity == DROP %} 
+                </i> 
+            {% endif %}
+        </td>
         <td width="20%">{{ b.date | date:"D j M H:i" }}</td>
       </tr>
     {% endfor %}

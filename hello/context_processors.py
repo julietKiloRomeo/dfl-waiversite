@@ -1,6 +1,8 @@
 from django.conf import settings
 import util
 from django.utils import timezone
+from models import Bid
+
 
 def custom(request):
     u               = request.user
@@ -17,5 +19,7 @@ def custom(request):
             'has_permission':has_permission, 
             'waiver_period':waiver_period,
             'now':now,
+            'DROP':Bid.DROP,
+            'FUNDS':Bid.FUNDS,
             'ms_left':ms_left}    
     
