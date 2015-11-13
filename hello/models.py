@@ -53,10 +53,7 @@ class Player(models.Model):
     nfl_id      = models.IntegerField(unique=True)
     position    = models.IntegerField(choices = POSITIONS, null=True, default = None)
     def __unicode__(self):
-        if self.dflteam:
-            return '%20s (%s)' % (self.name, self.dflteam.name)
-        else:    
-            return '%20s ' % (self.name)
+        return '%20s ' % (self.name)
             
     def pos_and_name(self):
         return '%-5s  %s' % (self.POSITIONS[self.position][1], self.name)

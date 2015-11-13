@@ -8,16 +8,51 @@ Created on Wed Sep 16 19:12:42 2015
 import requests
 from bs4 import BeautifulSoup as bs
 import re
-from models import Player, Team, Bid
 import time
 import datetime
 from django.utils import timezone
+from models import Player, Team, Bid
 
 def waiver_week(d):
     # 9 sep 2015 was a Wednesday
     w_0 = datetime.datetime(year=2015, month=9, day=9, hour=14)
     w_0 =  timezone.make_aware(w_0, timezone.get_current_timezone())
     return (d-w_0).days//7+1
+
+def last_wednesday_at_14():
+    current_time            = timezone.localtime(timezone.now())
+    go_back_one_week        = current_time.weekday() <= 2
+    monday_of_current_week  = current_time.date() - datetime.timedelta(days=current_time.weekday())
+    # get last wednesday. If it is mon, tue or wed it is last week, otherwise wed this week
+    last_wednesday = (monday_of_current_week + 
+                      datetime.timedelta(days=2, weeks = -1*go_back_one_week  ))
+    
+    l_w_at_14 = datetime.datetime.combine(last_wednesday, datetime.time(14))
+    l_w_at_14 =  timezone.make_aware(l_w_at_14, timezone.get_current_timezone())
+    return l_w_at_14
+
+def time_until_open():
+    current_time            = timezone.localtime(timezone.now())
+    is_first_part_of_week   = current_time.weekday() < 1 or (current_time.weekday() == 1 and current_time.hour < 6)
+    add_one_week            = not is_first_part_of_week
+    monday_of_current_week  = current_time.date() - datetime.timedelta(days=current_time.weekday())
+    monday_of_current_week  = datetime.datetime.combine(monday_of_current_week, datetime.time(0))
+    monday_of_current_week  = timezone.make_aware(monday_of_current_week, timezone.get_current_timezone())
+    next_tuesday_at_06      = monday_of_current_week + datetime.timedelta(weeks=1*add_one_week, days=1, hours=6)
+    return next_tuesday_at_06 - timezone.now()
+
+def is_1_waiver_period(t=None):
+    if not t:
+        t = timezone.now()
+    current_time            = timezone.localtime(t)
+    is_tuesday_after_06     = current_time.weekday() == 1 and current_time.hour >= 6
+    is_w_before_14          = (current_time.weekday() == 2) and current_time.hour < 14
+    
+    return is_tuesday_after_06 or is_w_before_14
+
+def is_2_waiver_period(t=None):    
+    return not is_1_waiver_period(t)
+
 
 def latest_trades():
     trades = Bid.objects.filter(succesful=True).order_by('team__name', '-amount')
@@ -164,41 +199,6 @@ def update_league():
                                    'position' : pos_enum, 
                                    'dflteam' : team} )
 
-
-
-def last_wednesday_at_14():
-    current_time            = timezone.localtime(timezone.now())
-    go_back_one_week        = current_time.weekday() <= 2
-    monday_of_current_week  = current_time.date() - datetime.timedelta(days=current_time.weekday())
-    # get last wednesday. If it is mon, tue or wed it is last week, otherwise wed this week
-    last_wednesday = (monday_of_current_week + 
-                      datetime.timedelta(days=2, weeks = -1*go_back_one_week  ))
-    
-    l_w_at_14 = datetime.datetime.combine(last_wednesday, datetime.time(14))
-    l_w_at_14 =  timezone.make_aware(l_w_at_14, timezone.get_current_timezone())
-    return l_w_at_14
-
-def time_until_open():
-    current_time            = timezone.localtime(timezone.now())
-    is_first_part_of_week   = current_time.weekday() < 1 or (current_time.weekday() == 1 and current_time.hour < 6)
-    add_one_week            = not is_first_part_of_week
-    monday_of_current_week  = current_time.date() - datetime.timedelta(days=current_time.weekday())
-    monday_of_current_week  = datetime.datetime.combine(monday_of_current_week, datetime.time(0))
-    monday_of_current_week  = timezone.make_aware(monday_of_current_week, timezone.get_current_timezone())
-    next_tuesday_at_06      = monday_of_current_week + datetime.timedelta(weeks=1*add_one_week, days=1, hours=6)
-    return next_tuesday_at_06 - timezone.now()
-
-def is_1_waiver_period(t=None):
-    if not t:
-        t = timezone.now()
-    current_time            = timezone.localtime(t)
-    is_tuesday_after_06     = current_time.weekday() == 1 and current_time.hour >= 6
-    is_w_before_14          = (current_time.weekday() == 2) and current_time.hour < 14
-    
-    return is_tuesday_after_06 or is_w_before_14
-
-def is_2_waiver_period(t=None):    
-    return not is_1_waiver_period(t)
 
 def clear_all_bids():
     for b in Bid.objects.all():
