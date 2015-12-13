@@ -13,6 +13,11 @@ import os
 import dj_database_url
 
 
+LEAGUE_URL = os.environ.get('LEAGUE_URL')
+NFL_USER   = os.environ.get('NFL_USER')
+NFL_PASS   = os.environ.get('NFL_PASS')
+
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
@@ -21,7 +26,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 # See https://docs.djangoproject.com/en/1.8/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'i+acxn5(akgsn!sr4^qgf(^m&*@+g1@u^t@=8s@axc41ml*f=s'
+SECRET_KEY = os.environ.get('SECRET_KEY')
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG           = False
@@ -130,12 +136,13 @@ IS_LOCAL                = False
 
 
 if os.environ.get('IS_LOCAL'):
+    passwd = os.environ.get('DB_PASS')
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql_psycopg2',
             'NAME': 'waiver',   
             'USER': 'jkr',
-            'PASSWORD': 'eskadron',
+            'PASSWORD': passwd,
             'HOST': 'localhost',
             'PORT': '',    }
     }

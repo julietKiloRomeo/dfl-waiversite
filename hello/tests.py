@@ -221,6 +221,15 @@ class AuctionTestCase(TestCase):
         print ' OK'
 
 
+    def test_nfllogin(self):
+        print ''
+        print '------------------- Testing NFL login: --------------------------'
+        session = util.nfl_login()
+        session.login()
+        
+        print '%40s' % ('Testing that NFL_USER can log in to fantasy.nfl.com:'),
+        self.assertTrue(session.is_logged_in())        
+        print ' OK'
 
 
         

@@ -12,6 +12,7 @@ import time
 import datetime
 from django.utils import timezone
 from models import Player, Team, Bid
+from django.conf import settings
 
 def waiver_week(d):
     # 9 sep 2015 was a Wednesday
@@ -101,7 +102,7 @@ def searchresult_2_player(row):
         return {'name':name, 'pos':pos, 'team':team, 'id':ID, 'owner':(owner_url, owner_name)}        
 
 def query(name):
-    url = 'http://fantasy.nfl.com/league/395388/players/search?searchQuery=%s' % (name)
+    url = '%s/players/search?searchQuery=%s' % (settings.LEAGUE_URL, name)
     rows, soup = url_rows(url)
 
     results = []
@@ -112,7 +113,7 @@ def query(name):
 
 
 def scrapeteam(id):
-    url        = 'http://fantasy.nfl.com/league/395388/team/%.0f' % id
+    url        = '%s/team/%.0f' % (settings.LEAGUE_URL, id)
     rows, soup = url_rows(url)
 
     #        <span class="teamRank teamId-3">(8)</span>
@@ -318,15 +319,15 @@ def round_results(commit=False, week=None):
         
 class nfl_login():
     login_url       = 'https://id2.s.nfl.com/fans/login?returnTo=http://www.nfl.com/fantasyfootball'
-    league_url      = 'http://fantasy.nfl.com/league/395388'
-    management_url  = 'http://fantasy.nfl.com/league/395388/manage'
-    addplayer_url   = 'http://fantasy.nfl.com/league/395388/manage/teamrosteraddplayerconfirm'
+    league_url      = settings.LEAGUE_URL
+    management_url  = '%s/manage' % league_url
+    addplayer_url   = '%s/manage/teamrosteraddplayerconfirm' % league_url
     
     def __init__(self):
         self.session = requests.session()
     def login(self):
-        payload = {'username': 'jimmy.kjaersgaard@gmail.com', 
-                   'password': 'eskadron',
+        payload = {'username': settings.NFL_USER, 
+                   'password': settings.NFL_PASS,
                    'cookiePersisted':'on',
                    'succesUrl':'',
                    's':'',
@@ -335,9 +336,9 @@ class nfl_login():
         self.session.post(self.login_url, data=payload)
 
     def is_logged_in(self):
-        # if Tommy, Thomas or I am logged in and has permission, management page will display properly
-        r = self.session.get(self.management_url)
-        m = re.search('League Management', r.content)
+        # if logged in, management page will display properly
+        r = self.session.get(self.league_url)
+        m = re.search('Sign Out', r.content)
         return m is not None
             
     # this has to be called shortly after add/drop or someone else may have performed a transaction - the function looks for the latest message
@@ -345,7 +346,7 @@ class nfl_login():
         # load frontpage of league
         r       = self.session.get(self.league_url)
         # look for latest add/drop message and parse out (team, add, drop)
-        pattern = 'class="teamName teamId-(?P<team>[0-9]*)">.*?added.*?leagueId=395388&playerId=(?P<add>[0-9]*).*?and dropped.*?playerId=(?P<drop>[0-9]*)'
+        pattern = 'class="teamName teamId-(?P<team>[0-9]*)">.*?added.*?leagueId=[0-9]*?&playerId=(?P<add>[0-9]*).*?and dropped.*?playerId=(?P<drop>[0-9]*)'
         m       = re.findall(pattern, r.content)
         # do they match the attempted transaction?    
         return m[0][0]==payload['teamId'] and m[0][1]==payload['addPlayerId'] and m[0][2]==payload['dropPlayerId']
