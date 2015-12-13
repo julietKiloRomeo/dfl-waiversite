@@ -20,7 +20,7 @@
   <table class="table table-striped">
     <thead>
       <tr>
-        <th>Name</th>
+        <th>Player</th>
         <th>DFL Team</th>
       </tr>
     </thead>
@@ -28,12 +28,12 @@
     {% for p in matches %}
         {% if p.dflteam %}
           <tr>
-            <th>{{ p.name  }}</th>
+            <th>{{ p.pos_and_name  }}  {{ p.nflteam  }}</th>
             <th>{{ p.dflteam.name  }}</th>
           </tr>
         {% else %}
           <tr>
-            <th><a href={% url 'bid' p.nfl_id %}> {{ p.name  }} </a></th>
+            <th><a href={% url 'bid' p.nfl_id %}> {{ p.pos_and_name  }}  {{ p.nflteam  }} </a></th>
             <th></th>
           </tr>
         {% endif %}
